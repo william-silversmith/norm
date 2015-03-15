@@ -1,0 +1,33 @@
+{
+  "name": "norm",
+  "version": "1.0.0",
+  "description": "A SQL builder that doesn't force its opinions on you. Paste SQL together, but with flexibility.",
+  "main": "norm.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/william-silversmith/norm.git"
+  },
+  "keywords": [
+    "sql",
+    "sql-builder"
+  ],
+  "author": "William Silversmith",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/william-silversmith/norm/issues"
+  },
+  "homepage": "https://github.com/william-silversmith/norm",
+  "devDependencies": {
+    "mocha": "^2.2.1"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "scripts": {
+    "test": "mocha"
+  }
+}
