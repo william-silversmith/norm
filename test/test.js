@@ -19,43 +19,51 @@ describe('Select', function () {
 			.select("foo")
 			.sql().should.equal("select foo from dual");
 	});
+	
 	it('Should allow adding multiple fields', function () {
 		norm()
 			.select("foo", "bar", "baz")
 			.sql().should.equal("select foo, bar, baz from dual");
 	});
+	
 	it('Should allow adding multiple fields using multiple select calls', function () {
 		norm()
 			.select("foo", "bar")
 			.select("baz")
 			.sql().should.equal("select foo, bar, baz from dual");
 	});
+	
 	it('Should allow adding a field using a function reference', function () {
 		norm()
 			.select("foo", "bar", function () { return "baz" })
 			.sql().should.equal("select foo, bar, baz from dual");
 	});
+
 	it('Should allow adding a field using another builder object', function () {
 		var n1 = norm();
 		norm()
 			.select("foo", "bar", n1)
 			.sql().should.equal("select foo, bar, (select 1 from dual) from dual");
 	});
+
 	it('Should allow adding a field using a bind and builder object', function () {
 		var n1 = norm();
 		norm()
 			.select("foo", "bar", ["(?) tmp", n1])
 			.sql().should.equal("select foo, bar, (select 1 from dual) tmp from dual");
 	});
+
 	it('Should remember binds', function () {
 		var n1 = norm().select("foo", "bar", ["?", 'so happy']);
 		n1.binds()[0].should.equal('so happy');
 	});
+
 	it('Binds operations should be idempotent', function () {
 		var n1 = norm().select("foo", "bar", ["?", 'so happy']);
 		n1.binds()[0].should.equal('so happy');
 		n1.binds()[0].should.equal('so happy'); 
 	});
+
 	it('Binds appear in the correct order', function () {
 		var n1 = norm().select("foo", ["?", "bar"], ["?", 'so happy']);
 		n1.binds()[0].should.equal('bar');
@@ -67,31 +75,37 @@ describe('From', function () {
 	it('Should allow specification of a table', function () {
 		norm().from("rawr").sql().should.equal("select 1 from rawr");
 	});
+
 	it('Should allow specification of multiple tables', function () {
 		norm().from("rawr, omg").sql().should.equal("select 1 from rawr, omg");
 	});
+
 	it('Should allow specification of multiple tables w/ multiple statements', function () {
 		norm()
 			.from("rawr, omg")
 			.from("wow")
 			.sql().should.equal("select 1 from rawr, omg, wow");
 	});
+
 	it('Should not allow adding a field using another builder object', function () {
 		(function () {
 			norm().from("foo", "bar", norm())
 		}).should.throw();
 	});
+
 	it('Should allow adding a field using a bind and builder object', function () {
 		var n1 = norm();
 		norm()
 			.select("foo", "bar", ["(?) tmp", n1])
 			.sql().should.equal("select foo, bar, (select 1 from dual) tmp from dual");
 	});
+
 	it('Binds operations should be idempotent', function () {
 		var n1 = norm().from("foo", "bar", ["?", 'so happy']);
 		n1.binds()[0].should.equal('so happy');
 		n1.binds()[0].should.equal('so happy'); 
 	});
+
 	it('Binds appear in the correct order', function () {
 		var n1 = norm().from("foo", ["?", "bar"], ["?", 'so happy']);
 		n1.binds()[0].should.equal('bar');
@@ -103,10 +117,12 @@ describe('Where', function () {
 	it('Should allow specification of a single clause', function () {
 		norm().where("a.id = b.id").sql().should.equal("select 1 from dual where a.id = b.id");
 	});
+
 	it('Should allow specification of multiple clauses', function () {
 		norm().where("a.id = 0", "a.id = b.id")
 			.sql().should.equal("select 1 from dual where a.id = 0 and a.id = b.id");
 	});
+
 	it('Should allow specification of multiple tables w/ multiple statements', function () {
 		norm()
 			.where("a.id = 0", "a.id = b.id")
@@ -114,21 +130,50 @@ describe('Where', function () {
 			.sql()
 			.should.equal("select 1 from dual where a.id = 0 and a.id = b.id and exists (select 1 from dual)");
 	});
+
 	it('Accepts function arguments', function () {
 		var n1 = norm();
 		norm()
 			.where("foo", "bar", function () { return "baz" })
 			.sql().should.equal("select 1 from dual where foo and bar and baz");
 	});
-	// it('Binds operations should be idempotent', function () {
-	// 	var n1 = norm().from("foo", "bar", ["?", 'so happy']);
-	// 	n1.binds()[0].should.equal('so happy');
-	// 	n1.binds()[0].should.equal('so happy'); 
-	// });
-	// it('Binds appear in the correct order', function () {
-	// 	var n1 = norm().from("foo", ["?", "bar"], ["?", 'so happy']);
-	// 	n1.binds()[0].should.equal('bar');
-	// 	n1.binds()[1].should.equal('so happy'); 
+
+	it('Accepts builder binds', function () {
+		var n1 = norm();
+		var n2 = norm().where(
+			["t.id < (?)", n1]
+		);
+		n2.sql().should.equal('select 1 from dual where t.id < (select 1 from dual)');
+	});
+
+	it('Binds appear in the correct order', function () {
+		var n1 = norm().where(
+			["t.id < ?", 5],
+			["t.id > ?", 1]
+		)
+		.where(["b.time > ?", '2015-03-01']);
+
+		n1.binds()[0].should.equal(5);
+		n1.binds()[1].should.equal(1);
+		n1.binds()[2].should.equal('2015-03-01');
+	});
+
+	// it('Nested Binds Appear in the Correct Order', function () {
+	// 	var n1 = norm().where(
+	// 		["t.id < ?", 5],
+	// 		["t.id > ?", 1]
+	// 	)
+	// 	.where(["b.time > ?", '2015-03-01']);
+
+	// 	var n2 = norm().where(
+	// 		["a.omg = ?", 7],
+	// 		["a.id < (?)", n1]
+	// 	);
+
+	// 	n2.binds()[0].should.equal(7);
+	// 	n2.binds()[1].should.equal(5);
+	// 	n2.binds()[2].should.equal(1);
+	// 	n2.binds()[3].should.equal('2015-03-01');
 	// });
 });
 
@@ -146,6 +191,7 @@ describe('And', function () {
 			.call()
 			.should.equal("(a and b and (select 1 from dual) and c and 3 = 3)")
 	});
+	
 	it("Binds from the conjunction are included in the full query", function () {
 		var n1 = norm();
 		var result = n1.where(
@@ -174,6 +220,7 @@ describe('Or', function () {
 			.call()
 			.should.equal("(a or b or (select 1 from dual) or c or 3 = 3)")
 	});
+	
 	it("Binds from the conjunction are included in the full query", function () {
 		var n1 = norm();
 		var result = n1.where(
@@ -235,6 +282,7 @@ describe('Limit', function () {
 	it('Should generate a maximum bound on result set size', function () {
 		norm().limit(5).sql().should.equal("select 1 from dual limit 5");
 	});
+	
 	it('Should generate a maximum bound and offset on result set size', function () {
 		norm().limit(5, 20).sql().should.equal("select 1 from dual limit 5, 20");
 	});
@@ -244,16 +292,48 @@ describe('Distinct', function () {
 	it('Should generate distinct queries', function () {
 		norm().distinct().sql().should.equal("select distinct 1 from dual");
 	});
+	
 	it('Should be cancelable', function () {
 		norm().distinct().distinct(false).sql().should.equal("select 1 from dual");
 	});
+	
 	it('Should be idempotent', function () {
 		norm().distinct().distinct().sql().should.equal("select distinct 1 from dual");
 	});
 });
 
 describe('Putting it All Together', function () {
-	
+	it('Users Query', function () {
+		var sql = norm().select(
+			"users.id",
+			"users.name"
+		)
+		.from("users")
+		.where(
+			["users.id > ?", 1],
+			"users.deleted is null"
+		)
+		.orderby("users.id desc")
+		.limit(10)
+		.distinct();
+
+		sql.sql().should.equal("select distinct users.id, users.name from users where users.id > ? and users.deleted is null order by users.id desc limit 10");
+	});
+
+	it('Scoring Query', function () {
+		var sql = norm().select(
+			"scores.user_id",
+			"IFNULL(sum(scores.points), 0) pts"
+		)
+		.from("scores")
+		.where(
+			["scores.created > ?", '2014-01-01']
+		)
+		.orderby("pts desc")
+		.groupby("scores.user_id");
+
+		sql.sql().should.equal("select scores.user_id, IFNULL(sum(scores.points), 0) pts from scores where scores.created > ? group by scores.user_id order by pts desc");
+	});
 });
 
 

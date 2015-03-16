@@ -170,7 +170,7 @@ function norm () {
 		var fns = [
 		 	striplast(",", _partials.select || function () { return "select 1" }),
 		 	striplast(",", _partials.from || function () { return "from dual" }),
-		 	striplast("and", _partials.where || function () { return "" }),
+		 	striplast(" and", _partials.where || function () { return "" }),
 		 	striplast(",", _partials.groupby || function () { return "" }),
 		 	striplast(",", _partials.orderby || function () { return "" }),
 		 	_partials.limit || function () { return  "" }
