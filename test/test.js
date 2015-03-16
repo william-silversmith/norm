@@ -167,13 +167,19 @@ describe('Where', function () {
 
 		var n2 = norm().where(
 			["a.omg = ?", 7],
+			["a.zomg = ?", 8],
 			["a.id < (?)", n1]
+			["a.type = ?", 'lion'],
+			["a.kingdom = ?", 'animalia']
 		);
 
 		n2.binds()[0].should.equal(7);
-		n2.binds()[1].should.equal(5);
-		n2.binds()[2].should.equal(1);
-		n2.binds()[3].should.equal('2015-03-01');
+		n2.binds()[1].should.equal(8);
+		n2.binds()[2].should.equal(5);
+		n2.binds()[3].should.equal(1);
+		n2.binds()[4].should.equal('2015-03-01');
+		n2.binds()[5].should.equal('lion');
+		n2.binds()[6].should.equal('animalia');
 	});
 });
 
