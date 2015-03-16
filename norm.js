@@ -1,9 +1,8 @@
 "use strict";
 
 function norm () {
-	var _this = this;
-	
-	_partials = resetPartials();
+	var _this = {};
+	var _partials = resetPartials();
 
 	function resetPartials() {
 		return {
@@ -53,11 +52,6 @@ function norm () {
 				}).bind(_this, fn);
 			}
 		});
-
-		fn = (function (fn) {
-			regex = new RegExp(conjunction + "\s*$");
-			return fn().replace(regex, ''); // remove last comma
-		}).bind(_this, fn);
 
 		return fn;
 	}
@@ -155,18 +149,26 @@ function norm () {
 	};
 
 	_this.sql = function () {
+		var striplast = function (conjunction, fn) {
+			var regex = new RegExp(conjunction + "\s*$");
+			return function () {
+				return fn().replace(regex, ''); // remove last comma
+			};
+		};
+
 		var fns = [
-		 	_partials.select || function () { return "select 1" },
-		 	_partials.from || function () { return "from dual" },
-		 	_partials.where || function () { return "" },
-		 	_partials.groupby || function () { return "" },
-		 	_partials.orderby || function () { return "" },
+		 	striplast(",", _partials.select || function () { return "select 1" }),
+		 	striplast(",", _partials.from || function () { return "from dual" }),
+		 	striplast("and", _partials.where || function () { return "" }),
+		 	striplast(",", _partials.groupby || function () { return "" }),
+		 	striplast(",", _partials.orderby || function () { return "" }),
 		 	_partials.limit || function () { return  "" }
 		];
 
-		return fns.map(function (fn) {
-			return fn();
-		}).join(" ").trim();
+		return fns
+			.map(function (fn) {
+				return fn();
+			}).join(" ").trim();
 	};
 
 	_this.binds = function () {

@@ -4,7 +4,7 @@
   "description": "A SQL builder that doesn't force its opinions on you. Paste SQL together, but with flexibility.",
   "main": "norm.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -21,13 +21,11 @@
   },
   "homepage": "https://github.com/william-silversmith/norm",
   "devDependencies": {
-    "mocha": "^2.2.1"
+    "mocha": "^2.2.1",
+    "should": "^5.2.0"
   },
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
-  "scripts": {
-    "test": "mocha"
-  }
+  "dependencies": {}
 }
