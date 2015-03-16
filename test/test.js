@@ -201,8 +201,8 @@ describe('And', function () {
 			)
 		).sqlAndBinds();
 		
-		result.sql.should.equal("select 1 from dual where (a.id = b.id and a.time = ?)");
-		result.binds[0].should.equal("2014-03-01");
+		result[0].should.equal("select 1 from dual where (a.id = b.id and a.time = ?)");
+		result[1][0].should.equal("2014-03-01");
 	});
 });
 
@@ -231,8 +231,8 @@ describe('Or', function () {
 			"a.wow = 'wow'"
 		).sqlAndBinds();
 		
-		result.sql.should.equal("select 1 from dual where (a.id = b.id or a.time = ?) and a.wow = 'wow'");
-		result.binds[0].should.equal("2014-03-01");
+		result[0].should.equal("select 1 from dual where (a.id = b.id or a.time = ?) and a.wow = 'wow'");
+		result[1][0].should.equal("2014-03-01");
 	});
 });
 
@@ -336,6 +336,27 @@ describe('Putting it All Together', function () {
 	});
 });
 
+describe('Cloning', function () {
+	it('Clone Produces Valid SQL Output', function () {
+		var n1 = norm().select("a.id").from("a").where("a.id = 5");
+		var n2 = n1.clone();
 
+		n2.sql().should.equal("select a.id from a where a.id = 5");
+	});
+
+	it('Identical Clones Produce Same SQL Output', function () {
+		var n1 = norm().select("a.id").from("a").where("a.id = 5");
+		var n2 = n1.clone();
+
+		(n1.sql() === n2.sql()).should.be.ok;
+	});
+
+	it('Clones Can Produce Different SQL Output', function () {
+		var n1 = norm().select("a.id").from("a").where("a.id = 5");
+		var n2 = n1.clone().where("omg");
+
+		(n1.sql() === n2.sql()).should.not.be.ok;
+	});
+});
 
 

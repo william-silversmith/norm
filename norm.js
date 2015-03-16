@@ -1,8 +1,8 @@
 "use strict";
 
-function norm () {
+function norm (state) {
 	var _this = {};
-	var _partials = resetPartials();
+	var _partials = state || resetPartials();
 
 	function resetPartials() {
 		return {
@@ -12,7 +12,6 @@ function norm () {
 			groupby: null,
 			orderby: null,
 			limit: null,
-			binds: [],
 			distinct: false,
 		};
 	}
@@ -20,37 +19,37 @@ function norm () {
 	function processArguments (fn, args, conjunction) {
 		args.forEach(function (stmt) {
 			if (Array.isArray(stmt)) {
-				fn = (function (fn) {
+				fn = (function (fn, sql_binds) {
 					var sql = stmt[0];
-					var binds = stmt.slice(1); // for idempotency: must not modify statement, slice makes a copy
 
-					binds.forEach(function (bnd) {
+					// for idempotency: must not modify statement, slice makes a copy
+					stmt.slice(1).forEach(function (bnd) {
 						if (typeof(bnd.sql) === 'function') {
 							sql = sql.replace(/\?/, bnd.sql());
-							_partials.binds.push.apply(_partials.binds, bnd.binds());
+							sql_binds.push.apply(sql_binds, bnd.binds());
 						}
 						else {
-							_partials.binds.push(bnd); 
+							sql_binds.push(bnd); 
 						}
 					});
 
-					return fn() + " " + sql + conjunction;
+					return fn(sql_binds) + " " + sql + conjunction;
 
 				}).bind(_this, fn);
 			}
 			else if (typeof(stmt) === 'function') {
-				fn = (function (fn) {
-					return fn() + " " + stmt() + conjunction;
+				fn = (function (fn, binds) {
+					return fn(binds) + " " + stmt(binds) + conjunction;
 				}).bind(_this, fn);
 			}
 			else if (stmt.sql) {
-				fn = (function (fn) {
-					return fn() + " (" + stmt.sql() + ")" + conjunction;
+				fn = (function (fn, binds) {
+					return fn(binds) + " (" + stmt.sql() + ")" + conjunction;
 				}).bind(_this, fn);
 			}
 			else { // e.g. str, bool, num, object (w/ toString)
-				fn = (function (fn) {
-					return fn() + " " + stmt + conjunction;
+				fn = (function (fn, binds) {
+					return fn(binds) + " " + stmt + conjunction;
 				}).bind(_this, fn);
 			}
 		});
@@ -141,8 +140,8 @@ function norm () {
 
 		fn = processArguments(fn, args, " and");
 
-		return function () {
-			var expr = fn().replace(/and\s*$/, '');
+		return function (binds) {
+			var expr = fn(binds).replace(/and\s*$/, '');
 			return "(" + expr.trim() + ")";
 		};
 	};
@@ -153,17 +152,18 @@ function norm () {
 		
 		fn = processArguments(fn, args, " or");
 
-		return function () {
-			var expr = fn().replace(/or\s*$/, '');
+		return function (binds) {
+			var expr = fn(binds).replace(/or\s*$/, '');
 			return "(" + expr.trim() + ")";
 		};
 	};
 
-	_this.sql = function () {
+	_this.sqlAndBinds = function () {
 		var striplast = function (conjunction, fn) {
 			var regex = new RegExp(conjunction + "\\s*$");
-			return function () {
-				return fn().replace(regex, ''); // remove last comma
+			return function (binds) {
+				debugger;
+				return fn(binds).replace(regex, ''); // remove last comma
 			};
 		};
 
@@ -177,38 +177,47 @@ function norm () {
 		];
 
 		if (_partials.distinct) {
-			 fns[0] = (function (fn) {
-			 	return fn().replace(/^\s*select(\s*distinct)?/, "select distinct");
+			 fns[0] = (function (fn, binds) {
+			 	return fn(binds).replace(/^\s*select(\s*distinct)?/, "select distinct");
 			 }).bind(_this, fns[0]);
 		}
 
 		// binds are computed freshly each time as a side effect
-		_partials.binds = []; 
+		var binds = []; 
 
 		var sql = fns
 			.map(function (fn) {
-				return fn();
+				return fn(binds);
 			})
 			.filter(function (str) {
 				return str !== "";
 			}).join(" ").trim();
 
 		// binds are added in reverse order b/c functions are evaluated outside-in
-		_partials.binds.reverse(); 
+		binds.reverse(); 
 
-		return sql;
+		return [ sql, binds ];
 	};
 
-	_this.sqlAndBinds = function () {
-		return { sql: _this.sql(), binds: _partials.binds };
+	_this.sql = function () {
+		return _this.sqlAndBinds()[0];
 	};
 
 	_this.binds = function () {
-		return _this.sqlAndBinds().binds;
+		return _this.sqlAndBinds()[1];
 	};
 
 	_this.reset = function () {
 		_partials = resetPartials();
+	};
+
+	_this.clone = function () {
+		var state = {};
+		Object.keys(_partials).forEach(function (key) {
+			state[key] = _partials[key];
+		});
+
+		return norm(state);
 	};
 
 	_this.toString = _this.sql;
@@ -217,7 +226,6 @@ function norm () {
 }
 
 module.exports = norm;
-
 
 
 
