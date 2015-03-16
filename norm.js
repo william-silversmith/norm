@@ -20,10 +20,11 @@ function norm () {
 		args.forEach(function (stmt) {
 			if (Array.isArray(stmt)) {
 				fn = (function (fn) {
-					var sql = stmt.shift();
+					var sql = stmt[0];
+					var binds = stmt.slice(1); // for idempotency: must not modify statement, slice makes a copy
 
-					stmt.forEach(function (bnd) {
-						if (bnd.sql) {
+					binds.forEach(function (bnd) {
+						if (typeof(bnd.sql) === 'function') {
 							sql = sql.replace(/\?/, bnd.sql());
 							_partials.binds.push.apply(_partials.binds, bnd.binds());
 						}
@@ -165,17 +166,24 @@ function norm () {
 		 	_partials.limit || function () { return  "" }
 		];
 
+		// binds are computed freshly each time as a side effect
+		_partials.binds = []; 
+
 		return fns
 			.map(function (fn) {
 				return fn();
 			}).join(" ").trim();
 	};
 
-	_this.binds = function () {
-		return _partials.binds;
+	_this.sqlAndBinds = function () {
+		return { sql: _this.sql(), binds: _partials.binds };
 	};
 
-	_this.clear = function () {
+	_this.binds = function () {
+		return _this.sqlAndBinds().binds;
+	};
+
+	_this.reset = function () {
 		_partials = resetPartials();
 	};
 

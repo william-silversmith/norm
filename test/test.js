@@ -30,4 +30,34 @@ describe('Select', function () {
 			.select("baz")
 			.sql().should.equal("select foo, bar, baz from dual");
 	});
+	it('Should allow adding a field using a function reference', function () {
+		norm()
+			.select("foo", "bar", function () { return "baz" })
+			.sql().should.equal("select foo, bar, baz from dual");
+	});
+	it('Should allow adding a field using another builder object', function () {
+		var n1 = norm();
+		norm()
+			.select("foo", "bar", n1)
+			.sql().should.equal("select foo, bar, (select 1 from dual) from dual");
+	});
+	it('Should allow adding a field using a bind and builder object', function () {
+		var n1 = norm();
+		norm()
+			.select("foo", "bar", ["(?) tmp", n1])
+			.sql().should.equal("select foo, bar, (select 1 from dual) tmp from dual");
+	});
+	it('Should remember binds', function () {
+		var n1 = norm().select("foo", "bar", ["?", 'so happy']);
+		n1.binds()[0].should.equal('so happy');
+		n1.binds()[0].should.equal('so happy');
+	});
 });
+
+
+
+
+
+
+
+
