@@ -87,9 +87,75 @@ describe('From', function () {
 			.select("foo", "bar", ["(?) tmp", n1])
 			.sql().should.equal("select foo, bar, (select 1 from dual) tmp from dual");
 	});
+	it('Binds operations should be idempotent', function () {
+		var n1 = norm().from("foo", "bar", ["?", 'so happy']);
+		n1.binds()[0].should.equal('so happy');
+		n1.binds()[0].should.equal('so happy'); 
+	});
+	it('Binds appear in the correct order', function () {
+		var n1 = norm().from("foo", ["?", "bar"], ["?", 'so happy']);
+		n1.binds()[0].should.equal('bar');
+		n1.binds()[1].should.equal('so happy'); 
+	});
 });
 
+describe('Where', function () {
+	it('Should allow specification of a single clause', function () {
+		norm().where("a.id = b.id").sql().should.equal("select 1 from dual where a.id = b.id");
+	});
+	it('Should allow specification of multiple clauses', function () {
+		norm().where("a.id = 0", "a.id = b.id")
+			.sql().should.equal("select 1 from dual where a.id = 0 and a.id = b.id");
+	});
+	it('Should allow specification of multiple tables w/ multiple statements', function () {
+		norm()
+			.where("a.id = 0", "a.id = b.id")
+			.where("exists (select 1 from dual)")
+			.sql()
+			.should.equal("select 1 from dual where a.id = 0 and a.id = b.id and exists (select 1 from dual)");
+	});
+	// it('Should allow adding a field using a bind and builder object', function () {
+	// 	var n1 = norm();
+	// 	norm()
+	// 		.where("foo", "bar", ["(?) tmp", n1])
+	// 		.sql().should.equal("select foo, bar, (select 1 from dual) tmp from dual");
+	// });
+	// it('Binds operations should be idempotent', function () {
+	// 	var n1 = norm().from("foo", "bar", ["?", 'so happy']);
+	// 	n1.binds()[0].should.equal('so happy');
+	// 	n1.binds()[0].should.equal('so happy'); 
+	// });
+	// it('Binds appear in the correct order', function () {
+	// 	var n1 = norm().from("foo", ["?", "bar"], ["?", 'so happy']);
+	// 	n1.binds()[0].should.equal('bar');
+	// 	n1.binds()[1].should.equal('so happy'); 
+	// });
+});
 
+describe('Group By', function () {
+	
+});
+
+describe('Order By', function () {
+	
+});
+
+describe('Limit', function () {
+	
+});
+
+describe('Distinct', function () {
+	it('Should generate distinct queries', function () {
+		norm().distinct().sql().should.equal("select distinct 1 from dual");
+	});
+	it('Should be idempotent', function () {
+		norm().distinct().distinct().sql().should.equal("select distinct 1 from dual");
+	});
+});
+
+describe('Putting it All Together', function () {
+	
+});
 
 
 

@@ -13,6 +13,7 @@ function norm () {
 			orderby: null,
 			limit: null,
 			binds: [],
+			distinct: false,
 		};
 	}
 
@@ -83,9 +84,9 @@ function norm () {
 
 	_this.where = function () {
 		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.from || function () { return "from" };
+		var fn = _partials.where || function () { return "where" };
 
-		_partials.from = processArguments(fn, args, " and ");
+		_partials.where = processArguments(fn, args, " and");
 
 		return _this;
 	};
@@ -119,15 +120,12 @@ function norm () {
 		return _this;
 	};
 
-	_this.distinct = function () {
-		if (!_partials.select) {
-			_partials.select = function () { return  "select distinct " };
+	_this.distinct = function (yes) {
+		if (yes === undefined) {
+			_partials.distinct = true;
 		}
 		else {
-			_partials.select = (function (fn) {
-				var sql = fn();
-				return sql.replace(/^\s*select(\s*distinct)?/, "select distinct");
-			}).bind(_this, _partials.select);
+			_partials.distinct = yes;
 		}
 
 		return _this;
@@ -157,7 +155,7 @@ function norm () {
 
 	_this.sql = function () {
 		var striplast = function (conjunction, fn) {
-			var regex = new RegExp(conjunction + "\s*$");
+			var regex = new RegExp(conjunction + "\\s*$");
 			return function () {
 				return fn().replace(regex, ''); // remove last comma
 			};
@@ -171,6 +169,12 @@ function norm () {
 		 	striplast(",", _partials.orderby || function () { return "" }),
 		 	_partials.limit || function () { return  "" }
 		];
+
+		if (_partials.distinct) {
+			 fns[0] = (function (fn) {
+			 	return fn().replace(/^\s*select(\s*distinct)?/, "select distinct");
+			 }).bind(_this, fns[0]);
+		}
 
 		// binds are computed freshly each time as a side effect
 		_partials.binds = []; 
