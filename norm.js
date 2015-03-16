@@ -135,10 +135,11 @@ function norm () {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = function () { return "" };
 
-		fn = processArguments(fn, args, " and ");
+		fn = processArguments(fn, args, " and");
 
 		return function () {
-			return "(" + fn() + ")";
+			var expr = fn().replace(/and\s*$/, '');
+			return "(" + expr.trim() + ")";
 		};
 	};
 
@@ -146,10 +147,11 @@ function norm () {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = function () { return "" };
 		
-		fn = processArguments(fn, args, " or ");
+		fn = processArguments(fn, args, " or");
 
 		return function () {
-			return "(" + fn() + ")";
+			var expr = fn().replace(/or\s*$/, '');
+			return "(" + expr.trim() + ")";
 		};
 	};
 

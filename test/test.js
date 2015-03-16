@@ -132,6 +132,38 @@ describe('Where', function () {
 	// });
 });
 
+describe('And', function () {
+	it("Should generate and'ed statements", function () {
+		norm()
+			.and("a", "b", function () { return "c" }, "3 = 3")
+			.call()
+			.should.equal("(a and b and c and 3 = 3)")
+	});
+
+	it("Accepts another builder object as a bind", function () {
+		norm()
+			.and("a", "b", norm(), function () { return "c" }, "3 = 3")
+			.call()
+			.should.equal("(a and b and (select 1 from dual) and c and 3 = 3)")
+	});
+});
+
+describe('Or', function () {
+	it("Should generate or'ed statements", function () {
+		norm()
+			.or("a", "b", function () { return "c" }, "3 = 3")
+			.call()
+			.should.equal("(a or b or c or 3 = 3)")
+	});
+
+	it("Accepts another builder object as a bind", function () {
+		norm()
+			.or("a", "b", norm(), function () { return "c" }, "3 = 3")
+			.call()
+			.should.equal("(a or b or (select 1 from dual) or c or 3 = 3)")
+	});
+});
+
 describe('Group By', function () {
 	
 });
