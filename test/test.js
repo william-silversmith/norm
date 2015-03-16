@@ -170,8 +170,6 @@ describe('Where', function () {
 			["a.id < (?)", n1]
 		);
 
-		console.log(n2.sqlAndBinds());
-
 		n2.binds()[0].should.equal(7);
 		n2.binds()[1].should.equal(5);
 		n2.binds()[2].should.equal(1);
