@@ -25,8 +25,16 @@ function norm (state) {
 					// for idempotency: must not modify statement, slice makes a copy
 					stmt.slice(1).forEach(function (bnd) {
 						if (typeof(bnd.sql) === 'function') {
-							sql = sql.replace(/\?/, bnd.sql());
-							sql_binds.push.apply(sql_binds, bnd.binds());
+							var result = bnd.sqlAndBinds();
+
+							var subsql = result[0];
+							var subbinds = result[1];
+
+							subbinds.reverse(); // since we're going to reverse them again...
+
+							sql = sql.replace(/\?/, subsql);
+							
+							sql_binds.push.apply(sql_binds, subbinds);
 						}
 						else {
 							sql_binds.push(bnd); 

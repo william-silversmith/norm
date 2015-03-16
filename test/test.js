@@ -158,23 +158,25 @@ describe('Where', function () {
 		n1.binds()[2].should.equal('2015-03-01');
 	});
 
-	// it('Nested Binds Appear in the Correct Order', function () {
-	// 	var n1 = norm().where(
-	// 		["t.id < ?", 5],
-	// 		["t.id > ?", 1]
-	// 	)
-	// 	.where(["b.time > ?", '2015-03-01']);
+	it('Nested Binds Appear in the Correct Order', function () {
+		var n1 = norm().where(
+			["t.id < ?", 5],
+			["t.id > ?", 1]
+		)
+		.where(["b.time > ?", '2015-03-01']);
 
-	// 	var n2 = norm().where(
-	// 		["a.omg = ?", 7],
-	// 		["a.id < (?)", n1]
-	// 	);
+		var n2 = norm().where(
+			["a.omg = ?", 7],
+			["a.id < (?)", n1]
+		);
 
-	// 	n2.binds()[0].should.equal(7);
-	// 	n2.binds()[1].should.equal(5);
-	// 	n2.binds()[2].should.equal(1);
-	// 	n2.binds()[3].should.equal('2015-03-01');
-	// });
+		console.log(n2.sqlAndBinds());
+
+		n2.binds()[0].should.equal(7);
+		n2.binds()[1].should.equal(5);
+		n2.binds()[2].should.equal(1);
+		n2.binds()[3].should.equal('2015-03-01');
+	});
 });
 
 describe('And', function () {
