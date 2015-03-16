@@ -96,6 +96,8 @@ function norm () {
 		var fn = _partials.groupby || function () { return "group by" };
 
 		_partials.groupby = processArguments(fn, args, ",");
+		
+		return _this;
 	};
 
 	_this.orderby = function () {
@@ -103,6 +105,8 @@ function norm () {
 		var fn = _partials.orderby || function () { return "order by" };
 
 		_partials.orderby = processArguments(fn, args, ",");
+
+		return _this;
 	};
 
 	_this.limit = function (lower, upper) {
@@ -184,6 +188,9 @@ function norm () {
 		var sql = fns
 			.map(function (fn) {
 				return fn();
+			})
+			.filter(function (str) {
+				return str !== "";
 			}).join(" ").trim();
 
 		// binds are added in reverse order b/c functions are evaluated outside-in
