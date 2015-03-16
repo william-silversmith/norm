@@ -29,7 +29,7 @@ function norm () {
 							_partials.binds.push.apply(_partials.binds, bnd.binds());
 						}
 						else {
-							_partials.binds.push(bnd);	
+							_partials.binds.push(bnd); 
 						}
 					});
 
@@ -69,6 +69,12 @@ function norm () {
 	_this.from = function () {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.from || function () { return "from" };
+
+		args.forEach(function (arg) {
+			if (arg.sql) {
+				throw new Error("You need to name your subquery: " + arg.sql());
+			}
+		});
 
 		_partials.from = processArguments(fn, args, ",");
 
@@ -169,10 +175,15 @@ function norm () {
 		// binds are computed freshly each time as a side effect
 		_partials.binds = []; 
 
-		return fns
+		var sql = fns
 			.map(function (fn) {
 				return fn();
 			}).join(" ").trim();
+
+		// binds are added in reverse order b/c functions are evaluated outside-in
+		_partials.binds.reverse(); 
+
+		return sql;
 	};
 
 	_this.sqlAndBinds = function () {

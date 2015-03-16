@@ -50,11 +50,44 @@ describe('Select', function () {
 	it('Should remember binds', function () {
 		var n1 = norm().select("foo", "bar", ["?", 'so happy']);
 		n1.binds()[0].should.equal('so happy');
+	});
+	it('Binds operations should be idempotent', function () {
+		var n1 = norm().select("foo", "bar", ["?", 'so happy']);
 		n1.binds()[0].should.equal('so happy');
+		n1.binds()[0].should.equal('so happy'); 
+	});
+	it('Binds appear in the correct order', function () {
+		var n1 = norm().select("foo", ["?", "bar"], ["?", 'so happy']);
+		n1.binds()[0].should.equal('bar');
+		n1.binds()[1].should.equal('so happy'); 
 	});
 });
 
-
+describe('From', function () {
+	it('Should allow specification of a table', function () {
+		norm().from("rawr").sql().should.equal("select 1 from rawr");
+	});
+	it('Should allow specification of multiple tables', function () {
+		norm().from("rawr, omg").sql().should.equal("select 1 from rawr, omg");
+	});
+	it('Should allow specification of multiple tables w/ multiple statements', function () {
+		norm()
+			.from("rawr, omg")
+			.from("wow")
+			.sql().should.equal("select 1 from rawr, omg, wow");
+	});
+	it('Should not allow adding a field using another builder object', function () {
+		(function () {
+			norm().from("foo", "bar", norm())
+		}).should.throw();
+	});
+	it('Should allow adding a field using a bind and builder object', function () {
+		var n1 = norm();
+		norm()
+			.select("foo", "bar", ["(?) tmp", n1])
+			.sql().should.equal("select foo, bar, (select 1 from dual) tmp from dual");
+	});
+});
 
 
 
