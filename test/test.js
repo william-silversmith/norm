@@ -160,26 +160,27 @@ describe('Where', function () {
 
 	it('Nested Binds Appear in the Correct Order', function () {
 		var n1 = norm().where(
-			["t.id < ?", 5],
-			["t.id > ?", 1]
+			["t.id < ?", 4],
+			["t.id > ?", 5]
 		)
-		.where(["b.time > ?", '2015-03-01']);
+		.where(["b.time > ?", 6]);
 
 		var n2 = norm().where(
-			["a.omg = ?", 7],
-			["a.zomg = ?", 8],
-			["a.id < (?)", n1]
-			["a.type = ?", 'lion'],
-			["a.kingdom = ?", 'animalia']
+			["a.omg = ?", 1],
+			["a.zomg = ?", 2],
+			["a.id > ? and a.id < (?)", 3, n1],
+			["a.type = ?", 7],
+			["a.kingdom = ?", 8]
 		);
 
-		n2.binds()[0].should.equal(7);
-		n2.binds()[1].should.equal(8);
-		n2.binds()[2].should.equal(5);
-		n2.binds()[3].should.equal(1);
-		n2.binds()[4].should.equal('2015-03-01');
-		n2.binds()[5].should.equal('lion');
-		n2.binds()[6].should.equal('animalia');
+		n2.binds()[0].should.equal(1);
+		n2.binds()[1].should.equal(2);
+		n2.binds()[2].should.equal(3);
+		n2.binds()[3].should.equal(4);
+		n2.binds()[4].should.equal(5);
+		n2.binds()[5].should.equal(6);
+		n2.binds()[6].should.equal(7);
+		n2.binds()[7].should.equal(8);
 	});
 });
 

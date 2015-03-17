@@ -23,7 +23,9 @@ function norm (state) {
 					var sql = stmt[0];
 
 					// for idempotency: must not modify statement, slice makes a copy
-					stmt.slice(1).forEach(function (bnd) {
+					var stmt_binds = stmt.slice(1);
+					stmt_binds.reverse();
+					stmt_binds.forEach(function (bnd) {
 						if (typeof(bnd.sql) === 'function') {
 							var result = bnd.sqlAndBinds();
 
@@ -37,9 +39,12 @@ function norm (state) {
 							sql_binds.push.apply(sql_binds, subbinds);
 						}
 						else {
+							sql = sql.replace(/\?/, '¿');
 							sql_binds.push(bnd); 
 						}
 					});
+
+					sql = sql.replace(/¿/g, '?');
 
 					return fn(sql_binds) + " " + sql + conjunction;
 
@@ -194,7 +199,6 @@ function norm (state) {
 		var striplast = function (conjunction, fn) {
 			var regex = new RegExp(conjunction + "\\s*$");
 			return function (binds) {
-				debugger;
 				return fn(binds).replace(regex, ''); // remove last comma
 			};
 		};
@@ -266,8 +270,6 @@ function norm (state) {
 }
 
 module.exports = norm;
-
-
 
 
 
