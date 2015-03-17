@@ -182,6 +182,20 @@ describe('Where', function () {
 		n2.binds()[6].should.equal(7);
 		n2.binds()[7].should.equal(8);
 	});
+
+	it("Array Binds Work Correclty", function () {
+		var n1 = norm().where(
+			["a.id = ?", 1],
+			["a.foo in (?)", [ 2, 3, 4, 5 ]],
+			["a.txt = ?", 6]
+		);
+
+		n1.sql().should.equal("select 1 from dual where a.id = ? and a.foo in (?,?,?,?) and a.txt = ?");
+
+		for (var i = 0; i < 6; i++) {
+			n1.binds()[i].should.equal(i + 1);
+		}
+	});
 });
 
 describe('Having', function () {

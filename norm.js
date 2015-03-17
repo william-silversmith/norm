@@ -37,9 +37,18 @@ function processArguments (fn, args, conjunction) {
 						
 						sql_binds.push.apply(sql_binds, result.binds);
 					}
-					else {
-						sql = sql.replace(/\?/, '¿');
-						sql_binds.push(bnd); 
+					else { 
+						if (!Array.isArray(bnd)) {
+							bnd = [bnd];
+						}
+
+						var bndstring = bnd.map(function () { return '¿' }).join(",");
+						sql = sql.replace(/\?/, bndstring);
+
+						var bndcpy = bnd.slice(0);
+						bndcpy.reverse();
+
+						sql_binds.push.apply(sql_binds, bndcpy);
 					}
 				});
 
