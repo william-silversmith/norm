@@ -5,6 +5,8 @@ A SQL builder that doesn't force its opinions on you. Just pastes SQL together i
 
 It currently only supports select queries. (SQL) Update, insert, and delete are coming. (DML) 
 
+Supported Clauses: select, distinct, from, where, group by, having, order by, limit
+
 # Installation
 
 Soon coming to npm. For now, simply grab it from github.
@@ -98,6 +100,8 @@ Here's a feature that's bizzarely missing in a variety of SQL programming contex
 	>> [ 'doge', 'nyan', 'ggg' ]
 
 ## Synthesizing Logical Expressions
+
+Supported operators: and, or, nand, nor
 
 By default, clauses like where and having use the and conjunction as it is the most common filter. However, sometimes you want a more complex query.
 
