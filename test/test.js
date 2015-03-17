@@ -284,6 +284,43 @@ describe('Order By', function () {
 	});
 });
 
+describe('Array Variants Equal Originals', function () {
+	it('#selecta', function () {
+		var n1 = norm().select('omg', 'wow');
+		var n2 = norm().selecta(['omg', 'wow']);
+
+		n1.sql().should.equal(n2.sql());
+	});
+
+	it('#froma', function () {
+		var n1 = norm().from('omg', 'wow');
+		var n2 = norm().froma(['omg', 'wow']);
+
+		n1.sql().should.equal(n2.sql());
+	});
+
+	it('#wherea', function () {
+		var n1 = norm().where('omg', 'wow');
+		var n2 = norm().wherea(['omg', 'wow']);
+
+		n1.sql().should.equal(n2.sql());
+	});
+
+	it('#groupbya', function () {
+		var n1 = norm().groupby('omg', 'wow');
+		var n2 = norm().groupbya(['omg', 'wow']);
+
+		n1.sql().should.equal(n2.sql());
+	});
+
+	it('#orderbya', function () {
+		var n1 = norm().orderby('omg', 'wow');
+		var n2 = norm().orderbya(['omg', 'wow']);
+
+		n1.sql().should.equal(n2.sql());
+	});
+});
+
 describe('Limit', function () {
 	it('Should generate a maximum bound on result set size', function () {
 		norm().limit(5).sql().should.equal("select 1 from dual limit 5");

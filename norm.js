@@ -69,6 +69,10 @@ function norm (state) {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.select || function () { return "select" };
 
+		if (!args.length) {
+			return _this;
+		}
+
 		_partials.select = processArguments(fn, args, ",");
 
 		return _this;
@@ -77,6 +81,10 @@ function norm (state) {
 	_this.from = function () {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.from || function () { return "from" };
+
+		if (!args.length) {
+			return _this;
+		}
 
 		args.forEach(function (arg) {
 			if (arg.sql) {
@@ -93,6 +101,10 @@ function norm (state) {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.where || function () { return "where" };
 
+		if (!args.length) {
+			return _this;
+		}
+
 		_partials.where = processArguments(fn, args, " and");
 
 		return _this;
@@ -101,6 +113,10 @@ function norm (state) {
 	_this.groupby = function () {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.groupby || function () { return "group by" };
+
+		if (!args.length) {
+			return _this;
+		}
 
 		_partials.groupby = processArguments(fn, args, ",");
 		
@@ -111,12 +127,20 @@ function norm (state) {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.orderby || function () { return "order by" };
 
+		if (!args.length) {
+			return _this;
+		}
+
 		_partials.orderby = processArguments(fn, args, ",");
 
 		return _this;
 	};
 
 	_this.limit = function (lower, upper) {
+		if (!lower && lower !== 0) {
+			return _this;
+		}
+
 		if (upper || upper === 0) {
 			_partials.limit = function () {
 				return "limit " + lower + ", " + upper;
@@ -229,6 +253,14 @@ function norm (state) {
 	};
 
 	_this.toString = _this.sql;
+
+	// Generate array parameter versions of select, from, etc
+	// as 'selecta', 'froma', etc
+	['select', 'from', 'where', 'groupby', 'orderby'].forEach(function (funcname) {
+		_this[funcname + 'a'] = function (array) {
+			return _this[funcname].apply(_this, array);
+		};
+	});
 
 	return _this;
 }
