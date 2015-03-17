@@ -19,6 +19,56 @@
  * Date: March 2015
  */
 
+function processArguments (fn, args, conjunction) {
+	args.forEach(function (stmt) {
+		if (Array.isArray(stmt)) {
+			fn = (function (fn, sql_binds) {
+				var sql = stmt[0];
+
+				// for idempotency: must not modify statement, slice makes a copy
+				var stmt_binds = stmt.slice(1);
+				stmt_binds.reverse();
+				stmt_binds.forEach(function (bnd) {
+					if (typeof(bnd.sql) === 'function') {
+						var result = bnd.sqlAndBinds();
+						result.binds.reverse(); // since we're going to reverse them again...
+
+						sql = sql.replace(/\?/, result.sql);
+						
+						sql_binds.push.apply(sql_binds, result.binds);
+					}
+					else {
+						sql = sql.replace(/\?/, '¿');
+						sql_binds.push(bnd); 
+					}
+				});
+
+				sql = sql.replace(/¿/g, '?');
+
+				return fn(sql_binds) + " " + sql + conjunction;
+
+			}).bind(null, fn);
+		}
+		else if (typeof(stmt) === 'function') {
+			fn = (function (fn, binds) {
+				return fn(binds) + " " + stmt(binds) + conjunction;
+			}).bind(null, fn);
+		}
+		else if (stmt.sql) {
+			fn = (function (fn, binds) {
+				return fn(binds) + " (" + stmt.sql() + ")" + conjunction;
+			}).bind(null, fn);
+		}
+		else { // e.g. str, bool, num, object (w/ toString)
+			fn = (function (fn, binds) {
+				return fn(binds) + " " + stmt + conjunction;
+			}).bind(null, fn);
+		}
+	});
+
+	return fn;
+}
+
 function norm (state) {
 	var _this = {};
 	var _partials = state || resetPartials();
@@ -34,56 +84,6 @@ function norm (state) {
 			limit: null,
 			distinct: false,
 		};
-	}
-
-	function processArguments (fn, args, conjunction) {
-		args.forEach(function (stmt) {
-			if (Array.isArray(stmt)) {
-				fn = (function (fn, sql_binds) {
-					var sql = stmt[0];
-
-					// for idempotency: must not modify statement, slice makes a copy
-					var stmt_binds = stmt.slice(1);
-					stmt_binds.reverse();
-					stmt_binds.forEach(function (bnd) {
-						if (typeof(bnd.sql) === 'function') {
-							var result = bnd.sqlAndBinds();
-							result.binds.reverse(); // since we're going to reverse them again...
-
-							sql = sql.replace(/\?/, result.sql);
-							
-							sql_binds.push.apply(sql_binds, result.binds);
-						}
-						else {
-							sql = sql.replace(/\?/, '¿');
-							sql_binds.push(bnd); 
-						}
-					});
-
-					sql = sql.replace(/¿/g, '?');
-
-					return fn(sql_binds) + " " + sql + conjunction;
-
-				}).bind(_this, fn);
-			}
-			else if (typeof(stmt) === 'function') {
-				fn = (function (fn, binds) {
-					return fn(binds) + " " + stmt(binds) + conjunction;
-				}).bind(_this, fn);
-			}
-			else if (stmt.sql) {
-				fn = (function (fn, binds) {
-					return fn(binds) + " (" + stmt.sql() + ")" + conjunction;
-				}).bind(_this, fn);
-			}
-			else { // e.g. str, bool, num, object (w/ toString)
-				fn = (function (fn, binds) {
-					return fn(binds) + " " + stmt + conjunction;
-				}).bind(_this, fn);
-			}
-		});
-
-		return fn;
 	}
 
 	_this.select = function () {
@@ -200,30 +200,6 @@ function norm (state) {
 		return _this;
 	};
 
-	_this.and = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = function () { return "" };
-
-		fn = processArguments(fn, args, " and");
-
-		return function (binds) {
-			var expr = fn(binds).replace(/and\s*$/, '');
-			return "(" + expr.trim() + ")";
-		};
-	};
-
-	_this.or = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = function () { return "" };
-		
-		fn = processArguments(fn, args, " or");
-
-		return function (binds) {
-			var expr = fn(binds).replace(/or\s*$/, '');
-			return "(" + expr.trim() + ")";
-		};
-	};
-
 	_this.sqlAndBinds = function () {
 		var striplast = function (conjunction, fn) {
 			var regex = new RegExp(conjunction + "\\s*$");
@@ -291,6 +267,8 @@ function norm (state) {
 	};
 
 	_this.toString = _this.sql;
+	_this.and = norm.and;
+	_this.or = norm.or;
 
 	// Generate array parameter versions of select, from, etc
 	// as 'selecta', 'froma', etc
@@ -303,8 +281,31 @@ function norm (state) {
 	return _this;
 }
 
-module.exports = norm;
+norm.and = function () {
+	var args = Array.prototype.slice.call(arguments);
+	var fn = function () { return "" };
 
+	fn = processArguments(fn, args, " and");
+
+	return function (binds) {
+		var expr = fn(binds).replace(/and\s*$/, '');
+		return "(" + expr.trim() + ")";
+	};
+};
+
+norm.or = function () {
+	var args = Array.prototype.slice.call(arguments);
+	var fn = function () { return "" };
+	
+	fn = processArguments(fn, args, " or");
+
+	return function (binds) {
+		var expr = fn(binds).replace(/or\s*$/, '');
+		return "(" + expr.trim() + ")";
+	};
+};
+
+module.exports = norm;
 
 /*
 

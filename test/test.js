@@ -218,9 +218,8 @@ describe('And', function () {
 	});
 	
 	it("Binds from the conjunction are included in the full query", function () {
-		var n1 = norm();
-		var result = n1.where(
-			n1.and(
+		var result = norm().where(
+			norm.and(
 				"a.id = b.id",
 				["a.time = ?", '2014-03-01']
 			)
