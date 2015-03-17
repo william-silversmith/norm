@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/william-silversmith/norm.svg?branch=master)](https://travis-ci.org/william-silversmith/norm)
+
 # norm
 A SQL builder that doesn't force its opinions on you. Just pastes SQL together in a constructive manner.
 
