@@ -230,6 +230,24 @@ describe('And', function () {
 	});
 });
 
+describe('Nand', function () {
+	it("Should generate not and'ed statements", function () {
+		norm
+			.nand("a", "b", function () { return "c" }, "3 = 3")
+			.call()
+			.should.equal("not (a and b and c and 3 = 3)")
+	});
+
+	it("Should combine well with and", function () {
+		norm.and(
+			norm.nand("a", "b", function () { return "c" }, "3 = 3"),
+			norm.nand("e", "f", "g")
+		)
+		.call()
+		.should.equal("(not (a and b and c and 3 = 3) and not (e and f and g))")
+	});
+});
+
 describe('Or', function () {
 	it("Should generate or'ed statements", function () {
 		norm()
@@ -256,6 +274,24 @@ describe('Or', function () {
 		
 		result.sql.should.equal("select 1 from dual where (a.id = b.id or a.time = ?) and a.wow = 'wow'");
 		result.binds[0].should.equal("2014-03-01");
+	});
+});
+
+describe('Nor', function () {
+	it("Should generate not or'ed statements", function () {
+		norm
+			.nor("a", "b", function () { return "c" }, "3 = 3")
+			.call()
+			.should.equal("not (a or b or c or 3 = 3)")
+	});
+
+	it("Should combine well with and", function () {
+		norm.and(
+			norm.nor("a", "b", function () { return "c" }, "3 = 3"),
+			norm.nor("e", "f", "g")
+		)
+		.call()
+		.should.equal("(not (a or b or c or 3 = 3) and not (e or f or g))")
 	});
 });
 

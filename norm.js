@@ -219,7 +219,9 @@ function norm (state) {
 
 	_this.toString = _this.sql;
 	_this.and = norm.and;
+	_this.nand = norm.nand;
 	_this.or = norm.or;
+	_this.nor = norm.nor;
 
 	// Generate array parameter versions of select, from, etc
 	// as 'selecta', 'froma', etc
@@ -244,6 +246,14 @@ norm.and = function () {
 	};
 };
 
+norm.nand = function () {
+	var args = Array.prototype.slice.call(arguments);
+
+	return function (binds) {
+		return "not " + norm.and.apply(null, args).call();
+	};
+};
+
 norm.or = function () {
 	var args = Array.prototype.slice.call(arguments);
 	var fn = function () { return "" };
@@ -253,6 +263,14 @@ norm.or = function () {
 	return function (binds) {
 		var expr = fn(binds).replace(/or\s*$/, '');
 		return "(" + expr.trim() + ")";
+	};
+};
+
+norm.nor = function () {
+	var args = Array.prototype.slice.call(arguments);
+
+	return function (binds) {
+		return "not " + norm.or.apply(null, args).call();
 	};
 };
 
