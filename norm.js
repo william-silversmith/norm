@@ -42,6 +42,7 @@ function processArguments (fn, args, conjunction) {
 							bnd = [bnd];
 						}
 
+						// using '¿' to mark already processed '?'
 						var bndstring = bnd.map(function () { return '¿' }).join(",");
 						sql = sql.replace(/\?/, bndstring);
 
