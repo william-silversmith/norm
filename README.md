@@ -75,6 +75,28 @@ Start with the planetary_query from the last example:
 
 Sorry Pluto....
 
+## Array Binds
+
+Here's a feature that's bizzarely missing in a variety of SQL programming contexts: Array Binds.
+
+	var query = norm()
+		.select(
+			"meme.id"
+		)
+		.from(
+			"meme"
+		)
+		.where(
+			["meme.name in (?)", [ 'doge', 'nyan', 'ggg' ]]
+		);
+
+	console.log(query.sql());
+	console.log(query.binds());
+
+	Output:
+	>> 'select meme.id from meme where meme.name in (?,?,?)'
+	>> [ 'doge', 'nyan', 'ggg' ]
+
 ## Synthesizing Logical Expressions
 
 By default, clauses like where and having use the and conjunction as it is the most common filter. However, sometimes you want a more complex query.
@@ -99,5 +121,3 @@ By default, clauses like where and having use the and conjunction as it is the m
 	Output:
 	>> 'select breakfasts.id, breakfasts.date, breakfasts.type from breakfasts where breakfasts.date > NOW() - INTERVAL 1 YEAR and (breakfasts.type in (?, ?) or breakfasts.friend_count > ?)'
 	>> [ 'brunch', 'standard', 20 ]
-
-
