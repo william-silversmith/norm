@@ -1,5 +1,24 @@
 "use strict";
 
+/* norm (no-are-em)
+ *
+ * A SQL builder that pastes SQL together without
+ * getting too fancy.
+ *
+ * Example Typical Usage:
+ *
+ * var nsql = norm().select("u.id").from("users u").where("u.id = ?", 5);
+ * db.query(nsql.sql(), nsql.binds(), callback);
+ *
+ * Building Two Related Queries:
+ *
+ * var nsql = norm().select("u.id").from("users u").where("u.id > ?", 5);
+ * var nsql2 = nsql.clone().where("u.id < ?", 100);
+ *
+ * Author: William Silversmith
+ * Date: March 2015
+ */
+
 function norm (state) {
 	var _this = {};
 	var _partials = state || resetPartials();
@@ -28,15 +47,11 @@ function norm (state) {
 					stmt_binds.forEach(function (bnd) {
 						if (typeof(bnd.sql) === 'function') {
 							var result = bnd.sqlAndBinds();
+							result.binds.reverse(); // since we're going to reverse them again...
 
-							var subsql = result[0];
-							var subbinds = result[1];
-
-							subbinds.reverse(); // since we're going to reverse them again...
-
-							sql = sql.replace(/\?/, subsql);
+							sql = sql.replace(/\?/, result.sql);
 							
-							sql_binds.push.apply(sql_binds, subbinds);
+							sql_binds.push.apply(sql_binds, result.binds);
 						}
 						else {
 							sql = sql.replace(/\?/, '¿');
@@ -232,15 +247,15 @@ function norm (state) {
 		// binds are added in reverse order b/c functions are evaluated outside-in
 		binds.reverse(); 
 
-		return [ sql, binds ];
+		return { sql: sql, binds: binds };
 	};
 
 	_this.sql = function () {
-		return _this.sqlAndBinds()[0];
+		return _this.sqlAndBinds().sql;
 	};
 
 	_this.binds = function () {
-		return _this.sqlAndBinds()[1];
+		return _this.sqlAndBinds().binds;
 	};
 
 	_this.reset = function () {
@@ -271,5 +286,37 @@ function norm (state) {
 
 module.exports = norm;
 
+
+/*
+
+Copyright (c) 2015, William Silversmith
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of norm nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+*/
 
 

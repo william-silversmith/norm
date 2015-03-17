@@ -208,8 +208,8 @@ describe('And', function () {
 			)
 		).sqlAndBinds();
 		
-		result[0].should.equal("select 1 from dual where (a.id = b.id and a.time = ?)");
-		result[1][0].should.equal("2014-03-01");
+		result.sql.should.equal("select 1 from dual where (a.id = b.id and a.time = ?)");
+		result.binds[0].should.equal("2014-03-01");
 	});
 });
 
@@ -238,8 +238,8 @@ describe('Or', function () {
 			"a.wow = 'wow'"
 		).sqlAndBinds();
 		
-		result[0].should.equal("select 1 from dual where (a.id = b.id or a.time = ?) and a.wow = 'wow'");
-		result[1][0].should.equal("2014-03-01");
+		result.sql.should.equal("select 1 from dual where (a.id = b.id or a.time = ?) and a.wow = 'wow'");
+		result.binds[0].should.equal("2014-03-01");
 	});
 });
 
