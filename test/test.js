@@ -246,9 +246,8 @@ describe('Or', function () {
 	});
 	
 	it("Binds from the conjunction are included in the full query", function () {
-		var n1 = norm();
-		var result = n1.where(
-			n1.or(
+		var result = norm().where(
+			norm.or(
 				"a.id = b.id",
 				["a.time = ?", '2014-03-01']
 			),

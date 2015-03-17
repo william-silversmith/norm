@@ -75,7 +75,29 @@ Start with the planetary_query from the last example:
 
 Sorry Pluto....
 
+## Synthesizing Logical Expressions
 
+By default, clauses like where and having use the and conjunction as it is the most common filter. However, sometimes you want a more complex query.
 
+	var query = norm().select(
+			"breakfasts.id",
+			"breakfasts.date",
+			"breakfasts.type"
+		)
+		.from("breakfasts")
+		.where(
+			"breakfasts.date > NOW() - INTERVAL 1 YEAR",
+			norm.or(
+				["breakfasts.type in (?, ?)", 'brunch', 'standard'],
+				[ "breakfasts.friend_count > ?", 20 ]
+			)
+		);
+
+	console.log(query.sql());
+	console.log(query.binds());
+
+	Output:
+	>> 'select breakfasts.id, breakfasts.date, breakfasts.type from breakfasts where breakfasts.date > NOW() - INTERVAL 1 YEAR and (breakfasts.type in (?, ?) or breakfasts.friend_count > ?)'
+	>> [ 'brunch', 'standard', 20 ]
 
 
