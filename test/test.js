@@ -184,6 +184,24 @@ describe('Where', function () {
 	});
 });
 
+describe('Having', function () {
+	it('Should not allow specification of a single clause w/o group by', function () {
+		norm().having("max(a.ct) = b.price").sql.should.throw();
+	});
+
+	it('Should allow specification of a single clause', function () {
+		norm().groupby("a.id").having("max(a.ct) = b.price").sql().should.equal("select 1 from dual group by a.id having max(a.ct) = b.price");
+	});
+
+	it('Should allow specification of a multiple clauses', function () {
+		norm()
+			.groupby("a.id")
+			.having("max(a.ct) = b.price")
+			.having("sum(a.omg) > 9000")
+			.sql().should.equal("select 1 from dual group by a.id having max(a.ct) = b.price and sum(a.omg) > 9000");
+	});
+});
+
 describe('And', function () {
 	it("Should generate and'ed statements", function () {
 		norm()

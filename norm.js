@@ -30,6 +30,7 @@ function norm (state) {
 			where: null,
 			groupby: null,
 			orderby: null,
+			having: null,
 			limit: null,
 			distinct: false,
 		};
@@ -130,6 +131,19 @@ function norm (state) {
 		return _this;
 	};
 
+	_this.having = function () {
+		var args = Array.prototype.slice.call(arguments);
+		var fn = _partials.having || function () { return "having" };
+
+		if (!args.length) {
+			return _this;
+		}
+
+		_partials.having = processArguments(fn, args, " and");
+
+		return _this;
+	};
+
 	_this.groupby = function () {
 		var args = Array.prototype.slice.call(arguments);
 		var fn = _partials.groupby || function () { return "group by" };
@@ -223,6 +237,7 @@ function norm (state) {
 		 	striplast(",", _partials.from || function () { return "from dual" }),
 		 	striplast(" and", _partials.where || function () { return "" }),
 		 	striplast(",", _partials.groupby || function () { return "" }),
+		 	striplast(" and", _partials.having || function () { return "" }),
 		 	striplast(",", _partials.orderby || function () { return "" }),
 		 	_partials.limit || function () { return  "" }
 		];
@@ -243,6 +258,10 @@ function norm (state) {
 			.filter(function (str) {
 				return str !== "";
 			}).join(" ").trim();
+
+		if (_partials.having && !_partials.groupby) {
+			throw new Error("You must have a group by clause to use a having clause: " + sql);
+		}
 
 		// binds are added in reverse order b/c functions are evaluated outside-in
 		binds.reverse(); 
