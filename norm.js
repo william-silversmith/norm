@@ -86,26 +86,26 @@ function norm (state) {
 		};
 	}
 
-	_this.select = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.select || function () { return "select" };
+	function ur_clause (base, conjunction) {
+		return function () {
+			var args = Array.prototype.slice.call(arguments);
+			var basefn = base.replace(' ', '');
+			var fn = _partials[basefn] || function () { return base };
 
-		if (!args.length) {
+			if (!args.length) {
+				return _this;
+			}
+
+			_partials[basefn] = processArguments(fn, args, conjunction);
+
 			return _this;
-		}
+		};
+	}
 
-		_partials.select = processArguments(fn, args, ",");
-
-		return _this;
-	};
+	_this.select = ur_clause('select', ',');
 
 	_this.from = function () {
 		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.from || function () { return "from" };
-
-		if (!args.length) {
-			return _this;
-		}
 
 		args.forEach(function (arg) {
 			if (arg.sql) {
@@ -113,62 +113,13 @@ function norm (state) {
 			}
 		});
 
-		_partials.from = processArguments(fn, args, ",");
-
-		return _this;
+		return ur_clause('from', ',').apply(null, args);
 	};
 
-	_this.where = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.where || function () { return "where" };
-
-		if (!args.length) {
-			return _this;
-		}
-
-		_partials.where = processArguments(fn, args, " and");
-
-		return _this;
-	};
-
-	_this.having = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.having || function () { return "having" };
-
-		if (!args.length) {
-			return _this;
-		}
-
-		_partials.having = processArguments(fn, args, " and");
-
-		return _this;
-	};
-
-	_this.groupby = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.groupby || function () { return "group by" };
-
-		if (!args.length) {
-			return _this;
-		}
-
-		_partials.groupby = processArguments(fn, args, ",");
-		
-		return _this;
-	};
-
-	_this.orderby = function () {
-		var args = Array.prototype.slice.call(arguments);
-		var fn = _partials.orderby || function () { return "order by" };
-
-		if (!args.length) {
-			return _this;
-		}
-
-		_partials.orderby = processArguments(fn, args, ",");
-
-		return _this;
-	};
+	_this.where = ur_clause("where", " and");
+	_this.groupby = ur_clause("group by", ",");
+	_this.having = ur_clause("having", " and");
+	_this.orderby = ur_clause("order by", ",");
 
 	_this.limit = function (lower, upper) {
 		if (!lower && lower !== 0) {
