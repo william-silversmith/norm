@@ -551,12 +551,31 @@ describe('Delete', function () {
 
 describe("Insert", function () {
 	it("Should generate valid insert queries from array input", function () {
-		norm().insert("foo (a,b)").values([1,2], [3,4], [5,6]).sql()
-		 	.should.equal("insert into foo (a,b) values (1,2),(3,4),(5,6)")
+		var n1 = norm().insert("foo (a,b)").values([1,2], [3,4], [5,6]);
+		n1.sql().should.equal("insert into foo (a,b) values (?,?),(?,?),(?,?)");
+
+		for (var i = 0; i < 6; i++) {
+		 	n1.binds()[i].should.equal(i + 1);
+		}
 	});
 
 	it("Should generate valid insert queries from hash input", function () {
-		norm().insert("foo").values({ a: 1, b: 2}, { a: 3, b: 4 }, { a: 5, b: 6 }).sql()
-		 	.should.equal("insert into foo (a,b) values (1,2),(3,4),(5,6)")
+		var n1 = norm().insert("foo").values({ a: 1, b: 2}, { a: 3, b: 4 }, { a: 5, b: 6 });
+		n1.sql().should.equal("insert into foo (a,b) values (?,?),(?,?),(?,?)");
+
+		for (var i = 0; i < 6; i++) {
+		 	n1.binds()[i].should.equal(i + 1);
+		}
+	});
+
+	it("Should generate valid insert select queries", function () {
+		var n1 = norm()
+			.insert("foo (id,val)")
+			.select("bar.id, bar.val")
+			.from("bar")
+			.where(["bar.sass = ?", 'extreme']);
+
+		n1.sql().should.equal("insert into foo (id,val) select bar.id, bar.val from bar where bar.sass = ?");
+		n1.binds()[0].should.equal('extreme');
 	});
 });

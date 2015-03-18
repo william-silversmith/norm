@@ -177,32 +177,37 @@ function norm (state) {
 			return _this;
 		}
 
-		var paren = function (x) { return "(" + x + ")" };
+		_partials.values = function (binds) {
+			var paren = function (x) { return "(" + x + ")" };
 
-		var cols = "";
-		var values = args;
+			var cols = "";
+			var values = args;
 
-		if (!Array.isArray(args[0])) {
-			cols = Object.keys(args[0]);
-			cols.sort();
+			if (!Array.isArray(args[0])) {
+				cols = Object.keys(args[0]);
+				cols.sort();
 
-			values = args.map(function (vals) {
-				var elem = [];
-				for (var i = 0; i < cols.length; i++) {
-					elem.push(vals[cols[i]]);
-				}
+				values = args.map(function (vals) {
+					var elem = [];
+					for (var i = 0; i < cols.length; i++) {
+						elem.push(vals[cols[i]]);
+					}
 
-				return elem;
-			});
+					return elem;
+				});
 
-			cols = paren(cols.join(",")) + " ";
-		}
+				cols = paren(cols.join(",")) + " ";
+			}
 
-		values = values.map(function (vals) {
-			return paren(vals.join(","));
-		}).join(",");
+			values = values.map(function (vals) {
+				vals.reverse();
+				binds.unshift.apply(binds, vals);
+				vals.reverse();
 
-		_partials.values = function () {
+				return paren(vals.map(function () { return  '?' }).join(","));
+			}).join(",");
+
+		
 			return cols + "values " + values;
 		};
 
@@ -299,7 +304,7 @@ function norm (state) {
 	}
 
 	function insertQuery () {
-		if (!_partials.values || _partials.select) {
+		if (!_partials.values && !_partials.select) {
 			throw new Error("You must specify a values or select clause.");
 		}
 
