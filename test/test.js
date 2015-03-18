@@ -522,6 +522,17 @@ describe('Delete', function () {
 			.sql().should.equal("delete from a where a.y > 5 and a.z > 4");
 	});
 
+	it("Should handle using", function () {
+		norm().delete("films")
+			.where(
+				"producer_id = producers.id", 
+				["producers.name = ?", 'foo']
+			)
+			.using("producers")
+			.sql().should.equal("delete from films using producers where producer_id = producers.id and producers.name = ?");
+	});
+
+
 	it("Should handle order by", function () {
 		norm().delete("a")
 			.where("a.y > 5", "a.z > 4")

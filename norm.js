@@ -96,6 +96,9 @@ function norm (state) {
 
 			update: null,
 			set: null,
+
+			"delete": null,
+			using: null
 		};
 	}
 
@@ -149,6 +152,8 @@ function norm (state) {
 
 		return _this;
 	};
+
+	_this.using = ur_clause("using", ",");
 
 	_this.limit = function (lower, upper) {
 		if (!lower && lower !== 0) {
@@ -226,6 +231,7 @@ function norm (state) {
 	function deleteQuery () {
 		var fns = [
 			striplast(",", _partials['delete']),
+			striplast(",", _partials.using || function () { return "" }),
 			striplast(" and", _partials.where || function () { return "" }),
 		 	striplast(",", _partials.orderby || function () { return "" }),
 		 	_partials.limit || function () { return  "" }
