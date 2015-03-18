@@ -511,3 +511,29 @@ describe('Update', function () {
 });
 
 
+describe('Delete', function () {
+	it("Should generate a valid delete query", function () {
+		norm().delete("foo").sql().should.equal("delete from foo");
+	});
+
+	it("Should generate valid delete queries with where clauses", function () {
+		norm().delete("a")
+			.where("a.y > 5", "a.z > 4")
+			.sql().should.equal("delete from a where a.y > 5 and a.z > 4");
+	});
+
+	it("Should handle order by", function () {
+		norm().delete("a")
+			.where("a.y > 5", "a.z > 4")
+			.orderby("a.y asc", "a.z desc")
+			.sql().should.equal("delete from a where a.y > 5 and a.z > 4 order by a.y asc, a.z desc");
+	});
+
+	it("Should handle limit", function () {
+		norm().delete("a")
+			.where("a.y > 5", "a.z > 4")
+			.orderby("a.y asc", "a.z desc")
+			.limit(5)
+			.sql().should.equal("delete from a where a.y > 5 and a.z > 4 order by a.y asc, a.z desc limit 5");
+	});
+});

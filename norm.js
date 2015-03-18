@@ -137,6 +137,19 @@ function norm (state) {
 	_this.update = ur_clause("update", ",");
 	_this.set = ur_clause("set", ",");
 
+	_this.delete = function () {
+		var args = Array.prototype.slice.call(arguments);
+		var fn = _partials['delete'] || function () { return "delete from" };
+
+		if (!args.length) {
+			return _this;
+		}
+
+		_partials['delete'] = processArguments(fn, args, ",");
+
+		return _this;
+	};
+
 	_this.limit = function (lower, upper) {
 		if (!lower && lower !== 0) {
 			return _this;
@@ -204,7 +217,22 @@ function norm (state) {
 		];
 
 		if (!_partials.update || !_partials.set) {
-			throw new Error("You must specify and update and set clause.");
+			throw new Error("You must specify update and set clauses.");
+		}
+
+		return fns;
+	}
+
+	function deleteQuery () {
+		var fns = [
+			striplast(",", _partials['delete']),
+			striplast(" and", _partials.where || function () { return "" }),
+		 	striplast(",", _partials.orderby || function () { return "" }),
+		 	_partials.limit || function () { return  "" }
+		];
+
+		if (!_partials['delete']) {
+			throw new Error("You must specify a delete clause.");
 		}
 
 		return fns;
@@ -215,6 +243,9 @@ function norm (state) {
 
 		if (_partials.update || _partials.set) {
 			fns = updateQuery();
+		}
+		else if (_partials.delete) {
+			fns = deleteQuery();
 		}
 		else {
 			fns = selectQuery();
