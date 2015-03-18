@@ -3,10 +3,6 @@
 # norm
 A SQL builder that doesn't force its opinions on you. Just pastes SQL together in a constructive manner.
 
-It currently only supports select queries. (SQL) Update, insert, and delete are coming. (DML) 
-
-Supported Clauses: select, distinct, from, where, group by, having, order by, limit
-
 # Installation
 
 Soon coming to npm. For now, simply grab it from github.
@@ -125,3 +121,60 @@ By default, clauses like where and having use the and conjunction as it is the m
 	Output:
 	>> 'select breakfasts.id, breakfasts.date, breakfasts.type from breakfasts where breakfasts.date > NOW() - INTERVAL 1 YEAR and (breakfasts.type in (?, ?) or breakfasts.friend_count > ?)'
 	>> [ 'brunch', 'standard', 20 ]
+
+## Update 
+
+	var query = norm()
+		.update("superheros")
+		.set(["superheros.real_first_name = ?", 'bruce'])
+		.where(["superheros.id = ?", 1])
+		.limit(1);
+
+	console.log(query.sql());
+	
+	Output:
+	>> 'update superheros set superheros.real_first_name = ? where superheros.id = ?'
+
+## Insert 
+
+	var values_query_array = norm()
+		.insert("superweapons (name)")
+		.values(['Death Star'], ['World Devastators']);
+
+	console.log(values_query_array.sql())
+	console.log(values_query_array.binds())
+
+	>> 'insert into superweapons (name) values (?),(?)'
+	>> [ 'Death Star', 'World Devastators' ]
+
+
+	var values_query_hashes = norm()
+		.insert("superweapons")
+		.values(
+			{ name: "Death Star", date: "A Long Time Ago" }, 
+			{ name: "World Devastators", date: "A Very Slightly Less Long Time Ago" }
+		);
+
+	console.log(values_query_array.sql())
+	console.log(values_query_array.binds())
+
+	>> 'insert into superweapons (name, date) values (?,?),(?,?)'
+	>> [ 'Death Star', 'A Long Time Ago', 'World Devastators', 'A Very Slightly Less Long Time Ago' ]
+
+	var select_query = norm()
+		.insert("superweapons (name)")
+		.select("catastrophes.cause")
+		.distinct()
+		.from("catastrophes")
+		.where("catastrophes.destruction_level > 9000");
+
+	console.log(values_query_array.sql())
+	console.log(values_query_array.binds())
+
+	>> 'insert into superweapons (name) select catastrophes.cause from catastophes where catastrophes.destruction_level > 9000'
+	>> []
+
+	
+## Delete
+
+Example coming soon.
