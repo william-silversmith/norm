@@ -141,7 +141,7 @@ describe('Where', function () {
 	it('Accepts builder binds', function () {
 		var n1 = norm();
 		var n2 = norm().where(
-			["t.id < (?)", n1]
+			["t.id < ?", n1]
 		);
 		n2.sql().should.equal('select 1 from dual where t.id < (select 1 from dual)');
 	});
@@ -466,6 +466,47 @@ describe('Cloning', function () {
 		var n2 = n1.clone().where("omg");
 
 		(n1.sql() === n2.sql()).should.not.be.ok;
+	});
+});
+
+describe('Update', function () {
+	it("Should throw error for invalid update queries", function () {
+		norm().update("a").sql.should.throw();
+		norm().set("a = 1").sql.should.throw();
+	});
+
+	it("Should generate valid update queries", function () {
+		norm().update("a").set("a.x = 1")
+			.sql().should.equal("update a set a.x = 1");
+	});
+
+	it("Should generate valid update queries with where clauses", function () {
+		norm().update("a").set("a.x = 1")
+			.where("a.y > 5", "a.z > 4")
+			.sql().should.equal("update a set a.x = 1 where a.y > 5 and a.z > 4");
+	});
+
+	it("Should handle order by", function () {
+		norm().update("a").set("a.x = 1")
+			.where("a.y > 5", "a.z > 4")
+			.orderby("a.y asc", "a.z desc")
+			.sql().should.equal("update a set a.x = 1 where a.y > 5 and a.z > 4 order by a.y asc, a.z desc");
+	});
+
+	it("Should handle limit", function () {
+		norm().update("a").set("a.x = 1")
+			.where("a.y > 5", "a.z > 4")
+			.orderby("a.y asc", "a.z desc")
+			.limit(5)
+			.sql().should.equal("update a set a.x = 1 where a.y > 5 and a.z > 4 order by a.y asc, a.z desc limit 5");
+	});
+
+	it("Should handle select subquery", function () {
+		var query = norm().select("sum(foo.x)").from("foo");
+
+		norm().update("a")
+			.set(["a.x = ?", query])
+			.sql().should.equal("update a set a.x = (select sum(foo.x) from foo)");
 	});
 });
 

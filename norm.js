@@ -33,7 +33,7 @@ function processArguments (fn, args, conjunction) {
 						var result = bnd.sqlAndBinds();
 						result.binds.reverse(); // since we're going to reverse them again...
 
-						sql = sql.replace(/\?/, result.sql);
+						sql = sql.replace(/\(\?\)|\?/, "(" + result.sql + ")");
 						
 						sql_binds.push.apply(sql_binds, result.binds);
 					}
@@ -93,6 +93,9 @@ function norm (state) {
 			having: null,
 			limit: null,
 			distinct: false,
+
+			update: null,
+			set: null,
 		};
 	}
 
@@ -131,6 +134,9 @@ function norm (state) {
 	_this.having = ur_clause("having", " and");
 	_this.orderby = ur_clause("order by", ",");
 
+	_this.update = ur_clause("update", ",");
+	_this.set = ur_clause("set", ",");
+
 	_this.limit = function (lower, upper) {
 		if (!lower && lower !== 0) {
 			return _this;
@@ -161,14 +167,14 @@ function norm (state) {
 		return _this;
 	};
 
-	_this.sqlAndBinds = function () {
-		var striplast = function (conjunction, fn) {
-			var regex = new RegExp(conjunction + "\\s*$");
-			return function (binds) {
-				return fn(binds).replace(regex, ''); // remove last comma
-			};
+	function striplast (conjunction, fn) {
+		var regex = new RegExp(conjunction + "\\s*$");
+		return function (binds) {
+			return fn(binds).replace(regex, ''); // remove last comma
 		};
+	}
 
+	function selectQuery () {
 		var fns = [
 		 	striplast(",", _partials.select || function () { return "select 1" }),
 		 	striplast(",", _partials.from || function () { return "from dual" }),
@@ -183,6 +189,35 @@ function norm (state) {
 			 fns[0] = (function (fn, binds) {
 			 	return fn(binds).replace(/^\s*select(\s*distinct)?/, "select distinct");
 			 }).bind(_this, fns[0]);
+		}
+
+		return fns;
+	}
+
+	function updateQuery () {
+		var fns = [
+			striplast(",", _partials.update),
+			striplast(",", _partials.set),
+			striplast(" and", _partials.where || function () { return "" }),
+			striplast(",", _partials.orderby || function () { return "" }),
+			_partials.limit || function () { return  "" }
+		];
+
+		if (!_partials.update || !_partials.set) {
+			throw new Error("You must specify and update and set clause.");
+		}
+
+		return fns;
+	}
+
+	_this.sqlAndBinds = function () {
+		var fns;
+
+		if (_partials.update || _partials.set) {
+			fns = updateQuery();
+		}
+		else {
+			fns = selectQuery();
 		}
 
 		// binds are computed freshly each time as a side effect
