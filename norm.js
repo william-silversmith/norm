@@ -98,7 +98,10 @@ function norm (state) {
 			set: null,
 
 			"delete": null,
-			using: null
+			using: null,
+
+			insert: null,
+			values: null,
 		};
 	}
 
@@ -154,6 +157,57 @@ function norm (state) {
 	};
 
 	_this.using = ur_clause("using", ",");
+
+	_this.insert = function (table) {
+		if (!table) {
+			return _this;
+		}
+
+		_partials.insert = function () {
+			return "insert into " + table;
+		};
+
+		return _this;
+	};
+
+	_this.values = function () {
+		var args = Array.prototype.slice.call(arguments);
+
+		if (!args.length) {
+			return _this;
+		}
+
+		var paren = function (x) { return "(" + x + ")" };
+
+		var cols = "";
+		var values = args;
+
+		if (!Array.isArray(args[0])) {
+			cols = Object.keys(args[0]);
+			cols.sort();
+
+			values = args.map(function (vals) {
+				var elem = [];
+				for (var i = 0; i < cols.length; i++) {
+					elem.push(vals[cols[i]]);
+				}
+
+				return elem;
+			});
+
+			cols = paren(cols.join(",")) + " ";
+		}
+
+		values = values.map(function (vals) {
+			return paren(vals.join(","));
+		}).join(",");
+
+		_partials.values = function () {
+			return cols + "values " + values;
+		};
+
+		return _this;
+	};
 
 	_this.limit = function (lower, upper) {
 		if (!lower && lower !== 0) {
@@ -244,6 +298,25 @@ function norm (state) {
 		return fns;
 	}
 
+	function insertQuery () {
+		if (!_partials.values || _partials.select) {
+			throw new Error("You must specify a values or select clause.");
+		}
+
+		if (_partials.values) {
+			return [
+				_partials.insert,
+				_partials.values
+			];
+		}
+
+		// for insert into ... select
+
+		var fns = [ _partials.insert ];
+		fns.push.apply(fns, selectQuery());
+		return fns;
+	}
+
 	_this.sqlAndBinds = function () {
 		var fns;
 
@@ -252,6 +325,9 @@ function norm (state) {
 		}
 		else if (_partials.delete) {
 			fns = deleteQuery();
+		}
+		else if (_partials.insert) {
+			fns = insertQuery();
 		}
 		else {
 			fns = selectQuery();
@@ -307,7 +383,7 @@ function norm (state) {
 
 	// Generate array parameter versions of select, from, etc
 	// as 'selecta', 'froma', etc
-	['select', 'from', 'where', 'groupby', 'orderby'].forEach(function (funcname) {
+	[ 'select', 'from', 'where', 'groupby', 'orderby', 'values' ].forEach(function (funcname) {
 		_this[funcname + 'a'] = function (array) {
 			return _this[funcname].apply(_this, array);
 		};

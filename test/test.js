@@ -548,3 +548,15 @@ describe('Delete', function () {
 			.sql().should.equal("delete from a where a.y > 5 and a.z > 4 order by a.y asc, a.z desc limit 5");
 	});
 });
+
+describe("Insert", function () {
+	it("Should generate valid insert queries from array input", function () {
+		norm().insert("foo (a,b)").values([1,2], [3,4], [5,6]).sql()
+		 	.should.equal("insert into foo (a,b) values (1,2),(3,4),(5,6)")
+	});
+
+	it("Should generate valid insert queries from hash input", function () {
+		norm().insert("foo").values({ a: 1, b: 2}, { a: 3, b: 4 }, { a: 5, b: 6 }).sql()
+		 	.should.equal("insert into foo (a,b) values (1,2),(3,4),(5,6)")
+	});
+});
