@@ -3,6 +3,23 @@
 # norm
 A SQL builder that doesn't force its opinions on you. Just pastes SQL together in a constructive manner.
 
+How will this make your life better? If you've never used a SQL builder:
+
+- SQL objects are composable like functions
+- SQL looks much more natural inside of your code
+- Binds tracking is handled for you
+- Arrays of values are gracefully handled
+
+What's different about norm-sql?
+
+- No setting up copies of schemas in javascript, just start writing SQL
+- Expressive logical operators that are simple to use
+- Easy to adapt to most SQL engines
+- Small module size - no mysteries!
+- No production dependencies 
+
+Check out the examples below to get a handle on what this looks like in practice.
+
 # Installation
 
 `npm install norm-sql`
