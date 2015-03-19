@@ -53,11 +53,11 @@ Soon coming to npm. For now, simply grab it from github.
 				[ "planets.au < ?", 50 ]
 			);
 
-		console.log(planetary_query.sql());
-		console.log(planetary_query.binds());
+	console.log(planetary_query.sql());
+	console.log(planetary_query.binds());
 
 	Output:
-	>> 'select planets.id, planets.name, (select sum(nations.gdp) from nations where nations.planetid = planets.id and nations.deleted is null) GPP from planets where GPP > 0 and planets.amu < ?'
+	>> 'select planets.id, planets.name, (select sum(nations.gdp) from nations where nations.planetid = planets.id and nations.deleted is null) GPP from planets where GPP > 0 and planets.au < ?'
 	>> [ 50 ]
 
 ## Constructing Similar Queries
@@ -110,7 +110,7 @@ By default, clauses like where and having use the and conjunction as it is the m
 		.where(
 			"breakfasts.date > NOW() - INTERVAL 1 YEAR",
 			norm.or(
-				["breakfasts.type in (?, ?)", 'brunch', 'standard'],
+				[ "breakfasts.type in (?, ?)", 'brunch', 'standard'],
 				[ "breakfasts.friend_count > ?", 20 ]
 			)
 		);
@@ -147,7 +147,6 @@ By default, clauses like where and having use the and conjunction as it is the m
 	>> 'insert into superweapons (name) values (?),(?)'
 	>> [ 'Death Star', 'World Devastators' ]
 
-
 	var values_query_hashes = norm()
 		.insert("superweapons")
 		.values(
@@ -173,8 +172,21 @@ By default, clauses like where and having use the and conjunction as it is the m
 
 	>> 'insert into superweapons (name) select catastrophes.cause from catastophes where catastrophes.destruction_level > 9000'
 	>> []
-
 	
 ## Delete
 
-Example coming soon.
+	var dml = norm()
+		.delete("particles")
+		.where(
+			["particles.membership = ?", 'atom'],
+			["particles.class in (?)", ['electron', 'neutron']]
+		);
+
+	console.log(dml.sql());
+	console.log(dml.binds());
+
+	Output:
+	>> 'delete from particles where particles.membership = ? and particles.class in (?,?)'
+	>> [ 'atom', 'electron', 'neutron' ]
+
+Boom.
