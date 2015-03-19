@@ -9,7 +9,9 @@ Soon coming to npm. For now, simply grab it from github.
 
 # Examples
 
-## Simple Example
+## Simple Select Example
+
+Supported Clauses: select, distinct, from, where, groupby, having, orderby, limit
 
     var norm = require('norm');
     
@@ -97,7 +99,7 @@ Here's a feature that's bizzarely missing in a variety of SQL programming contex
 
 ## Synthesizing Logical Expressions
 
-Supported operators: and, or, nand, nor
+Supported Operators: and, or, nand, nor
 
 By default, clauses like where and having use the and conjunction as it is the most common filter. However, sometimes you want a more complex query.
 
@@ -124,6 +126,8 @@ By default, clauses like where and having use the and conjunction as it is the m
 
 ## Update 
 
+Supported Clauses: update, set, where, orderby, limit
+
 	var query = norm()
 		.update("superheros")
 		.set(["superheros.real_first_name = ?", 'bruce'])
@@ -136,6 +140,8 @@ By default, clauses like where and having use the and conjunction as it is the m
 	>> 'update superheros set superheros.real_first_name = ? where superheros.id = ?'
 
 ## Insert 
+
+Supported Clauses: insert, values, select
 
 	var values_query_array = norm()
 		.insert("superweapons (name)")
@@ -174,6 +180,8 @@ By default, clauses like where and having use the and conjunction as it is the m
 	>> []
 	
 ## Delete
+
+Supported Clauses: delete, using, where, orderby, limit
 
 	var dml = norm()
 		.delete("particles")
