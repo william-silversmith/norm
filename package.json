@@ -1,5 +1,5 @@
 {
-  "name": "norm",
+  "name": "norm-sql",
   "version": "1.0.0",
   "description": "A SQL builder that doesn't force its opinions on you. Paste SQL together, but with flexibility.",
   "main": "norm.js",
@@ -11,6 +11,7 @@
     "url": "https://github.com/william-silversmith/norm.git"
   },
   "keywords": [
+    "orm",
     "sql",
     "sql-builder"
   ],
