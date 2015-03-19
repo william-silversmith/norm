@@ -5,7 +5,7 @@ A SQL builder that doesn't force its opinions on you. Just pastes SQL together i
 
 # Installation
 
-Soon coming to npm. For now, simply grab it from github.
+`npm install norm-sql`
 
 # Examples
 
@@ -13,7 +13,7 @@ Soon coming to npm. For now, simply grab it from github.
 
 Supported Clauses: select, distinct, from, where, groupby, having, orderby, limit
 
-    var norm = require('norm');
+    var norm = require('norm-sql');
     
     var query = norm()
     	.select("users.id", "users.username")
@@ -33,7 +33,7 @@ Supported Clauses: select, distinct, from, where, groupby, having, orderby, limi
 
 ## Subquery Example
 
-	var norm = require('norm');
+	var norm = require('norm-sql');
 
 	var national_query = norm()
 		.select("sum(nations.gdp)")
@@ -78,6 +78,8 @@ Sorry Pluto....
 ## Array Binds
 
 Here's a feature that's bizzarely missing in a variety of SQL programming contexts: Array Binds.
+	
+	var norm = require('norm-sql');
 
 	var query = norm()
 		.select(
@@ -102,6 +104,8 @@ Here's a feature that's bizzarely missing in a variety of SQL programming contex
 Supported Operators: and, or, nand, nor
 
 By default, clauses like where and having use the and conjunction as it is the most common filter. However, sometimes you want a more complex query.
+
+	var norm = require('norm-sql');
 
 	var query = norm().select(
 			"breakfasts.id",
@@ -128,6 +132,8 @@ By default, clauses like where and having use the and conjunction as it is the m
 
 Supported Clauses: update, set, where, orderby, limit
 
+	var norm = require('norm-sql');
+
 	var query = norm()
 		.update("superheros")
 		.set(["superheros.real_first_name = ?", 'bruce'])
@@ -142,6 +148,8 @@ Supported Clauses: update, set, where, orderby, limit
 ## Insert 
 
 Supported Clauses: insert, values, select
+
+	var norm = require('norm-sql');
 
 	var values_query_array = norm()
 		.insert("superweapons (name)")
@@ -182,6 +190,8 @@ Supported Clauses: insert, values, select
 ## Delete
 
 Supported Clauses: delete, using, where, orderby, limit
+
+	var norm = require('norm-sql');
 
 	var dml = norm()
 		.delete("particles")
