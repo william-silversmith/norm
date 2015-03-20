@@ -201,7 +201,7 @@ Supported Clauses: insert, values, select
 	console.log(values_query_array.sql())
 	console.log(values_query_array.binds())
 
-	>> 'insert into superweapons (name) select catastrophes.cause from catastophes where catastrophes.destruction_level > 9000'
+	>> 'insert into superweapons (name) select distinct catastrophes.cause from catastophes where catastrophes.destruction_level > 9000'
 	>> []
 	
 ## Delete
