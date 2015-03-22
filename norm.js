@@ -170,36 +170,42 @@ function norm (state) {
 		return _this;
 	};
 
+	function paren (x) { return "(" + x + ")" }
+
 	_this.values = function () {
 		var args = Array.prototype.slice.call(arguments);
+		_partials.values = _partials.values || function () { return "values " };
 
 		if (!args.length) {
 			return _this;
 		}
 
-		_partials.values = function (binds) {
-			var paren = function (x) { return "(" + x + ")" };
+		var cols;
+		var values = args;
 
-			var cols = "";
-			var values = args;
+		if (!Array.isArray(args[0]) && typeof(args[0]) === 'object') {
+			cols = Object.keys(args[0]);
+			cols.sort();
 
-			if (!Array.isArray(args[0])) {
-				cols = Object.keys(args[0]);
-				cols.sort();
+			values = args.map(function (vals) {
+				var elem = [];
+				for (var i = 0; i < cols.length; i++) {
+					elem.push(vals[cols[i]]);
+				}
 
-				values = args.map(function (vals) {
-					var elem = [];
-					for (var i = 0; i < cols.length; i++) {
-						elem.push(vals[cols[i]]);
-					}
+				return elem;
+			});
 
-					return elem;
-				});
+			cols = paren(cols.join(","));
+		}
+		else if (!Array.isArray(args[0])) {
+			values = args.map(function (x) { return [x] });
+		}
+		
+		_partials.values = (function (fn, binds) {
+			var dml = fn(binds); // do this first to ensure binds are added in the correct order
 
-				cols = paren(cols.join(",")) + " ";
-			}
-
-			values = values.map(function (vals) {
+			var qmarks = values.map(function (vals) {
 				vals.reverse();
 				binds.unshift.apply(binds, vals);
 				vals.reverse();
@@ -207,9 +213,14 @@ function norm (state) {
 				return paren(vals.map(function () { return  '?' }).join(","));
 			}).join(",");
 
-		
-			return cols + "values " + values;
-		};
+			dml = dml + qmarks + ',';
+
+			if (cols) {
+				dml = dml.replace(/^(\(.*\))? ?values/, cols + " values");
+			}
+
+			return dml;
+		}).bind(null, _partials.values);
 
 		return _this;
 	};
@@ -311,7 +322,7 @@ function norm (state) {
 		if (_partials.values) {
 			return [
 				_partials.insert,
-				_partials.values
+				striplast(",", _partials.values)
 			];
 		}
 

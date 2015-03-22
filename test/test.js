@@ -578,4 +578,34 @@ describe("Insert", function () {
 		n1.sql().should.equal("insert into foo (id,val) select bar.id, bar.val from bar where bar.sass = ?");
 		n1.binds()[0].should.equal('extreme');
 	});
+
+	it("Simplified syntax for single column inserts works", function () {
+		var n1 = norm()
+			.insert("shangrila (col)")
+			.values(1,2,3,4,5);
+
+
+		n1.sql()
+			.should.equal("insert into shangrila (col) values (?),(?),(?),(?),(?)");
+
+		var bnds = n1.binds();
+		for (var i = 0; i < bnds.length; i++) {
+			bnds[i].should.equal(i+1);
+		}
+	});
+
+	it("Should allow multiple applications of values", function () {
+		var n1 = norm()
+			.insert("shangrila (col)")
+			.values(1,2,3);
+		
+		n1.values(4,5,6);
+
+		n1.sql().should.equal("insert into shangrila (col) values (?),(?),(?),(?),(?),(?)");
+
+		var bnds = n1.binds();
+		for (var i = 0; i < bnds.length; i++) {
+			bnds[i].should.equal(i+1);
+		}
+	});
 });
