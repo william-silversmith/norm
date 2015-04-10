@@ -309,6 +309,54 @@ describe('Nor', function () {
 	});
 });
 
+describe('Xor', function () {
+	it("Should generate a valid xor statement", function () {
+		norm
+			.xor("a", "b")
+			.call()
+			.should.equal("(not (a and b) and (a or b))")
+	});
+
+	it("Two input xor statement is valid", function () {
+		var xor = norm
+			.xor("a", "b")
+			.call();
+
+		var code = xor.replace(/and/g, '&&').replace(/or/g, '||').replace(/not /g, "!");
+
+		var correct = [ false, true, true, false ];
+		for (var i = 0; i < 4; i++) {
+			var a = i <= 1;
+			var b = i % 2 === 0;
+
+			eval(code).should.equal(correct[i]);
+		}
+	});
+
+	it("Triple xor statement is one and only one (not nested xor)", function () {
+		var xor = norm
+			.xor("a", "b", "c")
+			.call();
+
+		var code = xor.replace(/and/g, '&&').replace(/or/g, '||').replace(/not /g, "!");
+
+		var correct = [ false, false, false, true, false, true, true, false ];
+		for (var i = 0; i < 8; i++) {
+			var a = i <= 3;
+			var b = Math.floor(i / 2) % 2 === 0;
+			var c = i % 2 === 0;
+
+			eval(code).should.equal(correct[i]);
+		}
+	});
+
+	it("Throws error for bad input.", function () {
+		(function () {
+			norm.xor("a")
+		}).should.throw();
+	});
+});
+
 describe('Group By', function () {
 	it('Should generate an ordered query', function () {
 		norm().groupby("time").sql().should.equal("select 1 from dual group by time");

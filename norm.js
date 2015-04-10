@@ -448,6 +448,47 @@ norm.nor = function () {
 	};
 };
 
+norm.xor = function () {
+	var args = Array.prototype.slice.call(arguments);
+
+	if (args.length <= 1) {
+		throw new Error("Cannot xor fewer than two arguments.");
+	}
+
+	if (args.length === 2) {
+		// implemented this way for maximum compatibility
+		// some sql implementations support an 'xor' keyword
+		// feel free to adapt this code if necessary
+		return norm.and(
+			norm.nand.apply(null, args),
+			norm.or.apply(null, args)
+		);
+	}
+
+
+	// Two choices here: Does multi-xor mean
+	// nested two pin xors (odd parity) or does
+	// it mean one and only one? 
+
+	// I'm taking a guess here and thinking that
+	// the more useful operation is one and only one
+
+	var ors = [];
+	for (var i = 0; i < args.length; i++) {
+		var others = args.slice();
+		others.splice(i, 1);
+
+		ors.push(
+			norm.and(
+				args[i],
+				norm.nor.apply(null, others)
+			)
+		);
+	};
+
+	return norm.or.apply(null, ors);
+};
+
 module.exports = norm;
 
 /*
