@@ -118,7 +118,7 @@ Here's a feature that's bizzarely missing in a variety of SQL programming contex
 
 ## Synthesizing Logical Expressions
 
-Supported Operators: and, or, nand, nor
+Supported Operators: and, or, nand, nor, xor
 
 By default, clauses like where and having use the and conjunction as it is the most common filter. However, sometimes you want a more complex query.
 
@@ -144,6 +144,8 @@ By default, clauses like where and having use the and conjunction as it is the m
 	Output:
 	>> 'select breakfasts.id, breakfasts.date, breakfasts.type from breakfasts where breakfasts.date > NOW() - INTERVAL 1 YEAR and (breakfasts.type in (?, ?) or breakfasts.friend_count > ?)'
 	>> [ 'brunch', 'standard', 20 ]
+
+Note: For more than two inputs, xor is defined as one and only one as opposed to nested binary xors as this is probably more useful.
 
 ## Update 
 
