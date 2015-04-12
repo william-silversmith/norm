@@ -1,6 +1,6 @@
 {
   "name": "norm-sql",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A SQL builder that doesn't force its opinions on you. Paste SQL together, but with flexibility.",
   "main": "norm.js",
   "scripts": {
@@ -13,7 +13,8 @@
   "keywords": [
     "orm",
     "sql",
-    "sql-builder"
+    "sql-builder",
+    "xor"
   ],
   "author": "William Silversmith",
   "license": "ISC",
