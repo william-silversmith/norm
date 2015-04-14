@@ -45,7 +45,7 @@ Supported Clauses: select, distinct, from, where, groupby, having, orderby, limi
 	console.log(query.binds());
 
     Output:
-	>> 'select users.id, users.username from users where users.powerlevel >= 9000 limit 1'
+	>> 'select users.id, users.username from users where users.powerlevel >= ? limit 1'
 	>> [ 9000 ]
 
 ## Subquery Example
