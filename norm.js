@@ -211,7 +211,9 @@ function norm (state) {
 					return typeof(x) !== 'object' || !x.raw;
 				})
 				.map(function (x) {
-					return x.value || x;
+					return x.value === undefined 
+						? x 
+						: x.value;
 				});
 				
 				binds.unshift.apply(binds, vals_without_raws);

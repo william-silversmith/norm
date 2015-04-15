@@ -663,16 +663,15 @@ describe("Insert", function () {
 			.values({
 				a: 1,
 				b: {
-					value: 2,
+					value: 0,
 				},
 			});
 
 		n1.sql().should.equal("insert into shangrila (a,b) values (?,?)");
 
 		var bnds = n1.binds();
-		for (var i = 0; i < bnds.length; i++) {
-			bnds[i].should.equal(i+1);
-		}
+		bnds[0].should.equal(1);
+		bnds[1].should.equal(0);
 	});
 
 	it("Should allow raw values", function () {

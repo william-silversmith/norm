@@ -1,6 +1,6 @@
 {
   "name": "norm-sql",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A SQL builder that doesn't force its opinions on you. Paste SQL together, but with flexibility.",
   "main": "norm.js",
   "scripts": {
