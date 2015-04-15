@@ -207,10 +207,23 @@ function norm (state) {
 
 			var qmarks = values.map(function (vals) {
 				vals.reverse();
-				binds.unshift.apply(binds, vals);
+				var vals_without_raws = vals.filter(function (x) {
+					return typeof(x) !== 'object' || !x.raw;
+				})
+				.map(function (x) {
+					return x.value || x;
+				});
+				
+				binds.unshift.apply(binds, vals_without_raws);
 				vals.reverse();
 
-				return paren(vals.map(function () { return  '?' }).join(","));
+				return paren(vals.map(function (x) { 
+					if (typeof(x) !== 'object' || !x.raw) {
+						return '?';
+					}
+
+					return x.value;
+				}).join(","));
 			}).join(",");
 
 			dml = dml + qmarks + ',';

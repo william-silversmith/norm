@@ -184,14 +184,21 @@ Supported Clauses: insert, values, select
 		.insert("superweapons")
 		.values(
 			{ name: "Death Star", date: "A Long Time Ago" }, 
-			{ name: "World Devastators", date: "A Very Slightly Less Long Time Ago" }
+			{ name: "World Devastators", date: "A Very Slightly Less Long Time Ago" },
+			{ 
+				name: "Sun Crusher", 
+				date: { 
+					raw: true, 
+					value: "NOW() - INTERVAL 401241 YEAR",
+				}, 
+			}
 		);
 
 	console.log(values_query_array.sql())
 	console.log(values_query_array.binds())
 
-	>> 'insert into superweapons (name, date) values (?,?),(?,?)'
-	>> [ 'Death Star', 'A Long Time Ago', 'World Devastators', 'A Very Slightly Less Long Time Ago' ]
+	>> 'insert into superweapons (name, date) values (?,?),(?,?),(?,NOW() - INTERVAL 401241 YEAR)'
+	>> [ 'Death Star', 'A Long Time Ago', 'World Devastators', 'A Very Slightly Less Long Time Ago', 'Sun Crusher' ]
 
 	var select_query = norm()
 		.insert("superweapons (name)")

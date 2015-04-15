@@ -656,4 +656,41 @@ describe("Insert", function () {
 			bnds[i].should.equal(i+1);
 		}
 	});
+
+	it("Should allow object values (precursor for raws)", function () {
+		var n1 = norm()
+			.insert("shangrila")
+			.values({
+				a: 1,
+				b: {
+					value: 2,
+				},
+			});
+
+		n1.sql().should.equal("insert into shangrila (a,b) values (?,?)");
+
+		var bnds = n1.binds();
+		for (var i = 0; i < bnds.length; i++) {
+			bnds[i].should.equal(i+1);
+		}
+	});
+
+	it("Should allow raw values", function () {
+		var n1 = norm()
+			.insert("shangrila")
+			.values({
+				a: 1,
+				b: {
+					value: "NOW()",
+					raw: true,
+				},
+			});
+
+		n1.sql().should.equal("insert into shangrila (a,b) values (?,NOW())");
+
+		var bnds = n1.binds();
+		for (var i = 0; i < bnds.length; i++) {
+			bnds[i].should.equal(i+1);
+		}
+	});
 });
