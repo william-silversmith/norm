@@ -19,6 +19,8 @@
  * Date: March 2015
  */
 
+ var _db_type = 'mysql';
+
 function processArguments (fn, args, conjunction) {
 	args.forEach(function (stmt) {
 		if (Array.isArray(stmt)) {
@@ -102,6 +104,8 @@ function norm (state) {
 
 			insert: null,
 			values: null,
+
+			db_engine: _db_type,
 		};
 	}
 
@@ -380,10 +384,24 @@ function norm (state) {
 		}
 
 		// binds are added in reverse order b/c functions are evaluated outside-in
-		binds.reverse(); 
+		binds.reverse();
+
+		if (_partials.db_engine === 'postgres') {
+			sql = convertToPostgres(sql, binds);
+		}
 
 		return { sql: sql, binds: binds };
 	};
+
+	function convertToPostgres (sql, binds) {
+		sql = sql || "";
+
+		for (var i = 1; i <= binds.length; i++) {
+			sql = sql.replace(/\?/, "$" + i);
+		}
+
+		return sql;
+	}
 
 	_this.sql = function () {
 		return _this.sqlAndBinds().sql;
@@ -422,6 +440,16 @@ function norm (state) {
 
 	return _this;
 }
+
+norm.engine = function (type) {
+	if (type === undefined) {
+		return _db_type;
+	}
+
+	_db_type = type || 'mysql';
+
+	return _db_type;
+};
 
 norm.and = function () {
 	var args = Array.prototype.slice.call(arguments);

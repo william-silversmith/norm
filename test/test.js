@@ -196,6 +196,26 @@ describe('Where', function () {
 			n1.binds()[i].should.equal(i + 1);
 		}
 	});
+
+	it('Should correctly convert binds to postgres style', function () {
+		norm.engine('postgres');
+
+		var n1 = norm()
+			.select("wow")
+			.from("wow")
+			.where(
+				["wow in (?, ?)", 1, 2 ],
+				["zowie < ?", 3]
+			);
+
+		n1.sql().should.equal("select wow from wow where wow in ($1, $2) and zowie < $3");
+
+		for (var i = 0; i < 3; i++) {
+			n1.binds()[i].should.equal(i + 1);
+		}
+
+		norm.engine('mysql');
+	});
 });
 
 describe('Having', function () {

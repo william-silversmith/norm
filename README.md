@@ -17,6 +17,7 @@ What's different about norm-sql?
 - Easy to adapt to most SQL engines
 - Small module size - no mysteries!
 - No production dependencies 
+- Supports MySQL/MariaDB/Oracle binds (?) and Postgres prepared statements ($1)
 
 Check out the examples below to get a handle on what this looks like in practice.
 
@@ -234,3 +235,28 @@ Supported Clauses: delete, using, where, orderby, limit
 	>> [ 'atom', 'electron', 'neutron' ]
 
 Boom.
+
+## Switch DB Engines
+
+	var norm = require('norm-sql');
+
+	norm.engine('postgres'); // default is mysql
+
+	var sql = norm()
+		.select("game, finished")
+		.from("matches")
+		.where(
+			[ "game in (?, ?)", 'chess', 'thermonuclear_war' ],
+			[ "finished = date '?'", '1983-01-01' ]
+		);
+
+	console.log(dml.sql());
+	console.log(dml.binds());
+
+	Output:
+	> "select game, finished from matches where game in ($1, $2) and finished = date '$3'"
+	> [ 'chess', 'themonuclear_war', '1983-01-01' ]
+
+Lesser boom.
+
+
